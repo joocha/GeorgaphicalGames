@@ -1,0 +1,7 @@
+{
+  "name": "atlas-quest-tools",
+  "private": true,
+  "description": "Rebuilds the embedded world map data for Atlas Quest",
+  "scripts": { "build-map": "node build-map.js" },
+  "dependencies": { "topojson-client": "^3.1.0", "world-atlas": "^2.0.2" }
+}
