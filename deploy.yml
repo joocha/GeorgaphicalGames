@@ -1,0 +1,61 @@
+# .github/workflows/deploy.yml
+#
+# GitHub Actions version of the GitLab pipeline (v5.5).
+#
+# Runs on a SELF-HOSTED runner installed on the VPS itself (same idea as the
+# GitLab shell runner). The runner needs Node.js, npm, pm2 and rsync, and
+# write access to $DEPLOY_PATH.
+#
+# Triggered on every push to main (and manually from the Actions tab).
+
+name: Deploy to production
+
+on:
+  push:
+    branches: [main]          # change if your default branch is "master"
+  workflow_dispatch:          # adds a "Run workflow" button
+
+# Never run two deploys at the same time
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  DEPLOY_PATH: /home/projects/geographical-games
+  # IMPORTANT: GitHub's runner kills every process a job started when the job
+  # ends. Clearing this ID stops it from killing the PM2 daemon / apps.
+  RUNNER_TRACKING_ID: ""
+
+jobs:
+  stop_nginx:
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Stop gitlab-ctl Nginx processes
+        run: |
+          echo "Stopping gitlab nginx processes..."
+          gitlab-ctl stop
+
+  deploy_site:
+    runs-on: [self-hosted, linux]
+    needs: stop_nginx
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy site
+        shell: bash
+        run: |
+          set -e
+          echo "Deploying site to $DEPLOY_PATH"
+          mkdir -p "$DEPLOY_PATH/"
+          rm -rf "$DEPLOY_PATH/node_modules" "$DEPLOY_PATH/dist" || true
+          rsync -a --delete --exclude 'node_modules' --exclude 'dist' --exclude '.env' / "$DEPLOY_PATH/"
+          cd "$DEPLOY_PATH/"
+          npm install
+          npm run build
+          chown -R "$(whoami)":"$(whoami)" .
+          find . -type d -exec chmod 755 {} \;
+          find . -type f -exec chmod 644 {} \;
+          find node_modules/.bin -type f -exec chmod 755 {} \; || true
+          gitlab-ctl start nginx
+
