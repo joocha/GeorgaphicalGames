@@ -1,3 +1,7 @@
 node_modules/
 tools/map.json
 .DS_Store
+*.yml
+*.yaml
+.env
+.env.*
