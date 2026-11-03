@@ -1,61 +1,105 @@
-# .github/workflows/deploy.yml
-#
-# GitHub Actions version of the GitLab pipeline (v5.5).
-#
-# Runs on a SELF-HOSTED runner installed on the VPS itself (same idea as the
-# GitLab shell runner). The runner needs Node.js, npm, pm2 and rsync, and
-# write access to $DEPLOY_PATH.
-#
-# Triggered on every push to main (and manually from the Actions tab).
 
 name: Deploy to production
 
 on:
   push:
-    branches: [main]          # change if your default branch is "master"
-  workflow_dispatch:          # adds a "Run workflow" button
+    branches:
+      - main
 
-# Never run two deploys at the same time
+  workflow_dispatch:
+
+# Never run two deployments simultaneously
 concurrency:
   group: production-deploy
   cancel-in-progress: false
 
 env:
   DEPLOY_PATH: /home/projects/geographical-games
-  # IMPORTANT: GitHub's runner kills every process a job started when the job
-  # ends. Clearing this ID stops it from killing the PM2 daemon / apps.
-  RUNNER_TRACKING_ID: ""
+  SERVICE_NAME: geographical-games
 
 jobs:
-  stop_nginx:
-    runs-on: [self-hosted, linux]
-    steps:
-      - name: Stop gitlab-ctl Nginx processes
-        run: |
-          echo "Stopping gitlab nginx processes..."
-          gitlab-ctl stop
-
-  deploy_site:
-    runs-on: [self-hosted, linux]
-    needs: stop_nginx
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
     environment: production
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Deploy to Linux Server
+        uses: appleboy/ssh-action@v1.2.2
 
-      - name: Deploy site
-        shell: bash
-        run: |
-          set -e
-          echo "Deploying site to $DEPLOY_PATH"
-          mkdir -p "$DEPLOY_PATH/"
-          rm -rf "$DEPLOY_PATH/node_modules" "$DEPLOY_PATH/dist" || true
-          rsync -a --delete --exclude 'node_modules' --exclude 'dist' --exclude '.env' / "$DEPLOY_PATH/"
-          cd "$DEPLOY_PATH/"
-          npm install
-          npm run build
-          chown -R "$(whoami)":"$(whoami)" .
-          find . -type d -exec chmod 755 {} \;
-          find . -type f -exec chmod 644 {} \;
-          find node_modules/.bin -type f -exec chmod 755 {} \; || true
-          gitlab-ctl start nginx
+        with:
+          host: ${{ vars.SERVER_HOST }}
+          username: ${{ vars.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ vars.SERVER_PORT }}
+          command_timeout: 20m
+          command_timeout: 20m
 
+          script: |
+            set -Eeuo pipefail
+
+            DEPLOY_PATH="/home/projects/geographical-games"
+            SERVICE_NAME="geographical-games"
+
+            echo "=================================="
+            echo "Starting deployment"
+            echo "=================================="
+
+            # Restore GitLab Nginx even if deployment fails
+            restart_nginx() {
+              echo "Starting GitLab Nginx..."
+              sudo gitlab-ctl start nginx
+            }
+
+            trap restart_nginx EXIT
+
+            # Stop GitLab Nginx
+            echo "Stopping GitLab Nginx..."
+            sudo gitlab-ctl stop nginx
+
+            # Navigate to project
+            cd "$DEPLOY_PATH"
+
+            # Update source code
+            echo "Updating source code..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Load NVM if installed
+            export NVM_DIR="$HOME/.nvm"
+
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              source "$NVM_DIR/nvm.sh"
+            fi
+
+            echo "Node version:"
+            node --version
+
+            echo "NPM version:"
+            npm --version
+
+            # Install dependencies
+            echo "Installing dependencies..."
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+
+            # Build application
+            echo "Building application..."
+            npm run build
+
+            # Restart application using Systemd
+            echo "Restarting application..."
+            sudo systemctl restart "$SERVICE_NAME"
+
+            # Verify application status
+            echo "Checking application status..."
+            sleep 3
+
+            sudo systemctl is-active --quiet "$SERVICE_NAME"
+
+            echo "=================================="
+            echo "Deployment completed successfully"
+            echo "=================================="
