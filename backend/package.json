@@ -1,0 +1,18 @@
+{
+  "name": "geography-game-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Backend API for Atlas Quest",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/server.js",
+    "start": "node src/server.js"
+  },
+  "engines": {
+    "node": ">=20.6"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

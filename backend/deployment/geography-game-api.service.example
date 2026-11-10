@@ -1,0 +1,28 @@
+# Example systemd unit for the Geography Game API.
+# NOT installed automatically. See backend/README.md ("Production: systemd")
+# for installation steps. Before installing:
+#   - create the `geogame` user/group (it does not exist by default)
+#   - replace /usr/bin/node with the output of `which node` (must be a path
+#     the geogame user can read, not inside another user's ~/.nvm)
+
+[Unit]
+Description=Geography Game API
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=geogame
+Group=geogame
+WorkingDirectory=/home/projects/geographical-games/backend
+EnvironmentFile=/home/projects/geographical-games/backend/.env
+ExecStart=/usr/bin/node /home/projects/geographical-games/backend/src/server.js
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
