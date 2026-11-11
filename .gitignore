@@ -6,3 +6,5 @@ tools/map.json
 .env
 .env.*
 !.env.example
+# GitHub Actions workflows must be tracked
+!.github/workflows/*.yml
