@@ -6,3 +6,4 @@ tools/map.json
 .env
 .env.*
 !.env.example
+backend/src/generated/

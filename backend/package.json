@@ -7,12 +7,19 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch --env-file=.env src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "db:validate": "prisma validate",
+    "db:format": "prisma format",
+    "db:status": "prisma migrate status",
+    "db:migrate:deploy": "prisma migrate deploy"
   },
   "engines": {
-    "node": ">=20.6"
+    "node": "^20.19 || ^22.12 || >=24.0"
   },
   "dependencies": {
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "prisma": "7.10.1"
   }
 }

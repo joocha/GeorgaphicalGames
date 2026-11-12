@@ -18,6 +18,8 @@ Browser / Telegram ──HTTPS──▶ Nginx ──┬── /          static 
 | `src/config.js` | Reads `HOST`/`PORT` and refuses to start on a non-loopback host |
 | `.env.example` | Environment template |
 | `deployment/geography-game-api.service.example` | Example systemd unit (not installed automatically) |
+| `prisma/` | PostgreSQL schema, migrations and constraint checks (Prisma 7) |
+| `docs/database.md` | Database design: ER diagram, tables, relationships, indexes, constraints |
 
 Health check: `GET /api/health` returns `{"status":"ok","uptime":<seconds>}`.
 
@@ -32,6 +34,18 @@ npm install
 npm run dev              # restarts on file changes
 curl http://127.0.0.1:3020/api/health
 ```
+
+## Database
+
+The PostgreSQL schema is defined with Prisma in `prisma/schema.prisma`. Read [docs/database.md](docs/database.md) before changing it. The API doesn't connect to the database yet.
+
+```bash
+npm run db:validate          # check the schema
+npm run db:status            # pending migrations on DATABASE_URL
+npm run db:migrate:deploy    # apply them (never resets data)
+```
+
+**Migrations are never applied automatically**, and `deploy.yml` doesn't run them. On production an administrator runs `npm run db:migrate:deploy` manually, after taking a backup.
 
 ## Production: systemd
 

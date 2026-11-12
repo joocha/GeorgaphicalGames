@@ -9,7 +9,7 @@ A geography game that makes the world interesting for young players. Everything 
 | `index.html` | **Telegram Mini App.** Find countries on the map and name them by their shape. 10 rounds, Easy and Hard modes. |
 | `web/index.html` | **Full web game** with five expeditions: Countries, Capitals & big cities, Rivers/lakes/seas, Mountains & relief, and Border journey. |
 | `tools/` | Script and templates that rebuild the embedded map data. |
-| `backend/` | Optional Node.js API (Express, `127.0.0.1:3020`). It runs as a systemd service behind Nginx. See [backend/README.md](backend/README.md). The games themselves don't need it. |
+| `backend/` | Optional Node.js API (Express, `127.0.0.1:3020`). It runs as a systemd service behind Nginx. See [backend/README.md](backend/README.md). The PostgreSQL schema is described in [backend/docs/database.md](backend/docs/database.md). The games themselves don't need it. |
 
 ## Play it
 
