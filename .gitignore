@@ -5,7 +5,7 @@ tools/map.json
 *.yaml
 .env
 .env.*
-!.env.example
+
 # GitHub Actions workflows must be tracked
 !.github/workflows/*.yml
 backend/src/generated/
