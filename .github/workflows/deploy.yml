@@ -42,18 +42,6 @@ jobs:
             echo "Starting deployment"
             echo "=================================="
 
-            # Restore Nginx even if deployment fails
-            restart_nginx() {
-              echo "Starting Nginx..."
-              sudo systemctl start nginx
-            }
-
-            trap restart_nginx EXIT
-
-            # Stop Nginx
-            echo "Stopping Nginx..."
-            sudo systemctl stop nginx
-
             # Navigate to project
             cd "$DEPLOY_PATH"
 
