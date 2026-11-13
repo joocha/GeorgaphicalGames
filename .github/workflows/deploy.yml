@@ -44,15 +44,15 @@ jobs:
 
             # Restore GitLab Nginx even if deployment fails
             restart_nginx() {
-              echo "Starting GitLab Nginx..."
-              sudo gitlab-ctl start nginx
+              echo "Starting Nginx..."
+              sudo systemctl start nginx
             }
 
             trap restart_nginx EXIT
 
-            # Stop GitLab Nginx
-            echo "Stopping GitLab Nginx..."
-            sudo gitlab-ctl stop nginx
+            # Stop Nginx
+            echo "Stopping Nginx..."
+            sudo systemctl stop nginx
 
             # Navigate to project
             cd "$DEPLOY_PATH"
