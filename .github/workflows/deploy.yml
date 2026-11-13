@@ -42,7 +42,7 @@ jobs:
             echo "Starting deployment"
             echo "=================================="
 
-            # Restore GitLab Nginx even if deployment fails
+            # Restore Nginx even if deployment fails
             restart_nginx() {
               echo "Starting Nginx..."
               sudo systemctl start nginx
