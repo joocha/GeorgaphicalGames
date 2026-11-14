@@ -87,6 +87,8 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
 .row span{font-size:12px;color:var(--hint)}
 .ghost{width:100%;background:var(--bg2);padding:14px;border-radius:12px;font-weight:700}
 .newbest{color:var(--good);font-weight:700}
+.sync{color:var(--hint);font-size:12px;text-align:center;min-height:1.2em}
+.sync.ok{color:var(--good)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -107,6 +109,7 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
     </div>
     <div class="best"><span>Best score</span><span id="bestTxt">—</span></div>
     <button class="cta" id="play">Play</button>
+    <div class="sync" id="syncStart"></div>
   </div>
 </section>
 
@@ -124,6 +127,8 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
 /* ===== CONFIG ===== */
 const GAME_LINK = "https://t.me/YOUR_BOT_USERNAME/play"; // your Mini App link, used by the Share button
 const ROUNDS = 10;
+const API_BASE = "/api";                  // Atlas Quest API (same origin, proxied by Nginx)
+const API_GAME = "telegram_country_quiz"; // game code in the API's catalog
 
 /* ===== TELEGRAM ===== */
 const tg = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== undefined ? window.Telegram.WebApp : null;
@@ -135,6 +140,41 @@ const store={
   get(k){return new Promise(res=>{if(canCloud()){tg.CloudStorage.getItem(k,(err,v)=>res(err?null:v))}else{try{res(localStorage.getItem(k))}catch(e){res(null)}}})},
   set(k,v){if(canCloud()){tg.CloudStorage.setItem(k,String(v))}else{try{localStorage.setItem(k,String(v))}catch(e){}}}
 };
+
+/* ===== API =====
+   Inside Telegram the Mini App signs the player in with Telegram's initData:
+   the API checks the signature, registers the player on first launch (user,
+   profile, Telegram identity) and returns an access token. Each game opens a
+   session on the server and records its result there. If the API can't be
+   reached, the game still works and keeps scores on the device. */
+const auth={token:null,player:null,loginP:null};
+async function apiFetch(method,path,body){
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),8000);
+  try{
+    const r=await fetch(API_BASE+path,{method,signal:ctl.signal,headers:{
+      ...(body!==undefined?{"Content-Type":"application/json"}:{}),
+      ...(auth.token?{Authorization:"Bearer "+auth.token}:{})},
+      body:body===undefined?undefined:JSON.stringify(body)});
+    const data=r.status===204?null:await r.json().catch(()=>null);
+    if(!r.ok){const e=new Error((data&&data.error)||("HTTP "+r.status));e.status=r.status;throw e}
+    return data;
+  }finally{clearTimeout(t)}
+}
+function login(){
+  if(!(inTG&&tg.initData))return Promise.resolve(null);
+  return auth.loginP=apiFetch("POST","/auth/telegram",{initData:tg.initData,platform:tg.platform,version:tg.version})
+    .then(d=>{auth.token=d.token;auth.player=d.player;return d})
+    .catch(e=>{console.warn("Atlas Quest API login failed:",e.message);auth.token=null;return null})
+    .finally(()=>{auth.loginP=null});
+}
+// Authenticated call; signs in again once if the token has expired.
+async function api(method,path,body){
+  if(auth.loginP)await auth.loginP;
+  if(!auth.token)throw new Error("offline");
+  try{return await apiFetch(method,path,body)}
+  catch(e){if(e.status!==401||!(await login()))throw e;return apiFetch(method,path,body)}
+}
+const online=()=>!!auth.token;
 
 /* ===== MAP DATA ===== */
 const MAP = /*MAPDATA*/;
@@ -185,13 +225,19 @@ let level="easy",best={easy:null,hard:null},spotT;
 const name=inTG&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.first_name;
 if(name)$("hello").textContent=`Hi, ${name}!`;
 function showBest(){const b=best[level];$("bestTxt").textContent=b==null?"Not played yet":`${b} points`}
+function showSync(){const el=$("syncStart");
+  el.textContent=online()?"☁️ Progress is saved to your profile":inTG&&!auth.loginP?"Offline · scores are saved on this device":"";
+  el.classList.toggle("ok",online())}
+// Server bests per mode; keep whichever is higher, the device's or the server's.
+function mergeBests(bests){const m=bests&&bests[API_GAME];if(!m)return;
+  ["easy","hard"].forEach(l=>{const v=m[l]&&m[l].best;if(v!=null&&(best[l]==null||v>best[l])){best[l]=v;store.set("best_"+l,v)}})}
 $("level").onclick=e=>{const b=e.target.closest("button");if(!b)return;level=b.dataset.l;haptic("tap");
   $("level").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));showBest()};
 function spotlight(){const n=EASY[rnd(EASY.length)];startMap.clear();startMap.paint([n],"hl");startMap.fit([n,...nearest(n,6)],1.3,220);startMap.label(n)}
 function show(id){["sStart","sGame","sResult"].forEach(s=>$(s).hidden=s!==id);
   if(inTG){try{id==="sGame"?tg.BackButton.show():tg.BackButton.hide()}catch(e){}}}
-if(inTG){try{tg.BackButton.onClick(()=>{haptic("tap");goStart()})}catch(e){}}
-function goStart(){show("sStart");spotlight();clearInterval(spotT);spotT=setInterval(spotlight,2500);showBest()}
+if(inTG){try{tg.BackButton.onClick(()=>{haptic("tap");leaveGame();goStart()})}catch(e){}}
+function goStart(){show("sStart");spotlight();clearInterval(spotT);spotT=setInterval(spotlight,2500);showBest();showSync()}
 $("play").onclick=()=>{haptic("tap");startGame()};
 
 /* ===== GAME ===== */
@@ -200,7 +246,11 @@ let G;
 function startGame(){
   clearInterval(spotT);
   const pool=shuffle(level==="easy"?EASY:ALL).slice(0,ROUNDS);
-  G={qs:pool.map((n,i)=>({n,type:i%2?"name":"find"})),i:0,score:0,correct:0,streak:0,bestStreak:0,res:[]};
+  G={qs:pool.map((n,i)=>({n,type:i%2?"name":"find"})),i:0,score:0,correct:0,streak:0,bestStreak:0,res:[],done:false};
+  // Open a game session on the server without blocking play.
+  G.sessionP=online()||auth.loginP
+    ?api("POST","/sessions",{game:API_GAME,mode:level,clientPlatform:inTG?"telegram":"web"}).then(d=>d.session.id).catch(()=>null)
+    :Promise.resolve(null);
   show("sGame");requestAnimationFrame(renderQ);
 }
 function header(){
@@ -251,8 +301,20 @@ function settle(ok,chosen){
   $("next").onclick=()=>{haptic("tap");G.i++;G.i>=G.qs.length?finish():renderQ()};
 }
 
+// Back button mid-game: close the server session as abandoned.
+function leaveGame(){if(!G||G.done)return;G.done=true;
+  G.sessionP.then(id=>id&&api("POST",`/sessions/${id}/abandon`)).catch(()=>{})}
+
 /* ===== RESULT ===== */
+// Records the finished game on the server; resolves to the API response or null.
+function saveResult(g){
+  return g.sessionP.then(id=>id&&api("POST",`/sessions/${id}/complete`,{
+    score:g.score,correctCount:g.correct,bestStreak:g.bestStreak,
+    details:{level,rounds:g.qs.map((q,i)=>({type:q.type,country:q.n,correct:g.res[i]===true}))}
+  })).catch(e=>{console.warn("Atlas Quest API: result not saved:",e.message);return null});
+}
 function finish(){
+  G.done=true;const saved=saveResult(G),lvl=level;
   const isBest=best[level]==null||G.score>best[level];
   if(isBest){best[level]=G.score;store.set("best_"+level,G.score)}
   const msg=G.correct>=9?"Map master!":G.correct>=7?"Great explorer!":G.correct>=5?"Good trip!":"The world is big. Try again!";
@@ -264,8 +326,14 @@ function finish(){
     <div class="row"><div><b>${G.score}</b><span>points</span></div><div><b>${G.bestStreak}</b><span>best streak</span></div><div><b>${best[level]}</b><span>best ever</span></div></div>
     <button class="cta" id="again">Play again</button>
     <button class="ghost" id="share">Challenge a friend</button>
-    <button class="ghost" id="menu">Menu</button>`;
+    <button class="ghost" id="menu">Menu</button>
+    <div class="sync" id="syncResult">${online()||auth.loginP?"Saving…":""}</div>`;
   show("sResult");
+  saved.then(d=>{const el=$("syncResult");
+    if(d&&d.best&&d.best.value!=null&&(best[lvl]==null||d.best.value>best[lvl])){best[lvl]=d.best.value;store.set("best_"+lvl,d.best.value)}
+    if(!el)return;
+    el.textContent=d?"☁️ Saved to your profile":online()?"Couldn't save this game to your profile":"";
+    el.classList.toggle("ok",!!d)});
   $("again").onclick=()=>{haptic("tap");startGame()};
   $("menu").onclick=()=>{haptic("tap");goStart()};
   $("share").onclick=()=>{
@@ -276,8 +344,13 @@ function finish(){
 }
 
 /* ===== BOOT ===== */
+const loginDone=login();
 Promise.all([store.get("best_easy"),store.get("best_hard")]).then(([e,h])=>{
-  best.easy=e?+e:null;best.hard=h?+h:null;goStart()});
+  best.easy=e?+e:null;best.hard=h?+h:null;goStart();
+  loginDone.then(d=>{
+    if(d){mergeBests(d.bests);const n=d.player.profile&&d.player.profile.displayName;if(n)$("hello").textContent=`Hi, ${n.split(" ")[0]}!`}
+    if(!$("sStart").hidden){showBest();showSync()}
+  })});
 
 </script>
 </body>

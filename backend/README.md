@@ -15,13 +15,41 @@ Browser / Telegram ──HTTPS──▶ Nginx ──┬── /          static 
 |---|---|
 | `src/server.js` | Entry point: starts the HTTP server and shuts down cleanly on SIGINT/SIGTERM |
 | `src/app.js` | Express app; all routes are mounted under `/api` |
-| `src/config.js` | Reads `HOST`/`PORT` and refuses to start on a non-loopback host |
+| `src/config.js` | Reads the environment and refuses to start on a non-loopback host |
+| `src/db.js` | PostgreSQL connection pool (node-postgres) and transaction helper |
+| `src/auth/` | Telegram `initData` verification and API access tokens |
+| `src/services/` | Player login/registration and game sessions/results |
+| `test/` | End-to-end API test against the real migrations (PGlite), `npm test` |
 | `.env.example` | Environment template |
 | `deployment/geography-game-api.service.example` | Example systemd unit (not installed automatically) |
 | `prisma/` | PostgreSQL schema, migrations and constraint checks (Prisma 7) |
 | `docs/database.md` | Database design: ER diagram, tables, relationships, indexes, constraints |
 
 Health check: `GET /api/health` returns `{"status":"ok","uptime":<seconds>}`.
+
+## API
+
+How the Telegram Mini App (`index.html`) uses it:
+
+1. **Launch.** The app sends `Telegram.WebApp.initData` to `POST /api/auth/telegram`. The API checks Telegram's signature with `TELEGRAM_BOT_TOKEN` and the `auth_date` age. On first launch it registers the player (`users`, `user_profiles`, `auth_identities`) in one transaction. On every launch it refreshes the profile (name, photo, language), `provider_data` (username, premium, launch context such as `start_param`) and the `last_*` timestamps. It returns an access token and the player's personal bests.
+2. **Play.** `POST /api/sessions` opens a game session (`in_progress`) for the chosen mode. Unfinished sessions of the same game are closed as `abandoned`.
+3. **Finish.** `POST /api/sessions/:id/complete` checks the result against the mode's rules, completes the session, and stores the result and a `game_result.recorded` outbox event in one transaction. The response says whether it is a new personal best. The Telegram back button in mid-game calls `POST /api/sessions/:id/abandon`.
+
+If the API can't be reached, or the app is opened outside Telegram, the game still works and keeps bests on the device, as before.
+
+| Method and path | Auth | Body | Response |
+|---|---|---|---|
+| `POST /api/auth/telegram` | none | `{initData, platform?, version?}` | `201` (new player) or `200`: `{token, expiresAt, player:{id, isNew, profile, telegram}, bests}` |
+| `GET /api/me?game=<code>` | Bearer | | `{player:{id, profile}, bests:{<game>:{<mode>:{metric, best, plays, lastPlayedAt}}}}` |
+| `POST /api/sessions` | Bearer | `{game, mode, clientPlatform}` | `201` `{session:{id, status, startedAt, roundsPerSession, ...}, abandonedSessions}` |
+| `POST /api/sessions/:id/complete` | Bearer | `{score, correctCount, bestStreak?, stars?, details?}` | `201` `{result, best:{metric, value, previous, isNew}}` |
+| `POST /api/sessions/:id/abandon` | Bearer | | `204` |
+
+Errors are `{error, code}`: `400/422` bad input or an impossible result, `401` invalid `initData` or token, `404` unknown session or mode, `409` session already finished, `503` the database or login isn't configured. `total_rounds`, `duration_ms` and `xp_earned` are set by the server, never by the client.
+
+The token is a signed, stateless `Bearer` token (HMAC with `SESSION_SECRET`, lifetime `SESSION_TTL_SECONDS`). The Mini App gets a new one on every launch and signs in again by itself if it expires.
+
+Without `DATABASE_URL`, `TELEGRAM_BOT_TOKEN` or `SESSION_SECRET`, the server still starts and `/api/health` still works (the deploy checks it), but the player endpoints answer `503`.
 
 ## Development
 
@@ -33,11 +61,12 @@ cp .env.example .env     # set NODE_ENV=development if you like
 npm install
 npm run dev              # restarts on file changes
 curl http://127.0.0.1:3020/api/health
+npm test                 # API test on an in-memory PostgreSQL (PGlite); no setup needed
 ```
 
 ## Database
 
-The PostgreSQL schema is defined with Prisma in `prisma/schema.prisma`. Read [docs/database.md](docs/database.md) before changing it. The API doesn't connect to the database yet.
+The PostgreSQL schema is defined with Prisma in `prisma/schema.prisma`. Read [docs/database.md](docs/database.md) before changing it. Prisma owns the schema and migrations. The API queries the database with plain SQL through `pg` (node-postgres), so there's no generated client and no build step on deploy.
 
 ```bash
 npm run db:validate          # check the schema
@@ -87,7 +116,8 @@ Run as the user who owns the checkout (the deploy user):
 cd /home/projects/geographical-games/backend
 npm ci --omit=dev        # or `npm install --omit=dev` if there is no package-lock.json
 cp .env.example .env
-nano .env                # keep HOST=127.0.0.1 and PORT=3020
+nano .env                # keep HOST=127.0.0.1 and PORT=3020; set DATABASE_URL,
+                         # TELEGRAM_BOT_TOKEN and SESSION_SECRET (openssl rand -hex 32)
 ```
 
 ### 4. File ownership and permissions
@@ -160,9 +190,9 @@ The app writes its logs to stdout and stderr, and systemd captures them in the j
 
 Port 3020 is bound to loopback, so it can't be reached from outside. Don't open it in `ufw` or any other firewall.
 
-## Nginx (future, manual)
+## Nginx (manual)
 
-**Nothing changes Nginx automatically.** When the API is ready to go public, an administrator adds this block to the existing server block. Leave the existing static frontend `location` blocks as they are.
+**Nothing changes Nginx automatically.** The Mini App calls the API at `/api` on its own origin, so Telegram login only works once an administrator adds this block to the server block that serves `index.html`. The Mini App URL in @BotFather must point at that same domain. On a different origin, such as GitHub Pages, the game falls back to device-only bests. Leave the existing static frontend `location` blocks as they are.
 
 ```nginx
 location /api/ {

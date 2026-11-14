@@ -435,8 +435,8 @@ These tables aren't in the migration. Add each one in its own migration when the
 
 - **No game content in the database.** The map, countries, capitals, flags and question banks stay embedded in `index.html` and `web/index.html`, unchanged.
 - **No leaderboard or statistics tables.** See section 8.
-- **No frontend or API changes.** The games still use local storage, and connecting them to the API is a separate task. The `legacyBestStorageKey` values in `config` are there to help with a later import of local bests.
-- **No Prisma Client yet.** The schema declares a `prisma-client` generator (output `src/generated/prisma`, which is gitignored). Generating it will need `@prisma/client` and a driver adapter such as `@prisma/adapter-pg` once the API starts using the database.
+- **Web Game not connected yet.** The Telegram Mini App uses the API for login, sessions and results (see [backend/README.md](../README.md#api)), and still keeps a local copy of its bests. The Web Game (`web/index.html`) still uses only local storage. The `legacyBestStorageKey` values in `config` are there to help with a later import of local bests.
+- **No Prisma Client.** The API uses plain SQL through `pg`, following the flows in section 7. The schema still declares a `prisma-client` generator (output `src/generated/prisma`, which is gitignored) in case it's needed later.
 
 ---
 
