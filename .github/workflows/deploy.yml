@@ -38,17 +38,33 @@ jobs:
             SERVICE_NAME="geography-game-api"
             HEALTH_URL="http://127.0.0.1:3020/api/health"
 
+            # The systemd unit is installed manually by an administrator
+            # (see backend/README.md). Until then, only the code is updated.
+            SERVICE_INSTALLED=0
+            if systemctl cat "$SERVICE_NAME" >/dev/null 2>&1; then
+              SERVICE_INSTALLED=1
+            fi
+
+            # On any failure, show why. If the API was stopped, it stays
+            # stopped: a half-installed backend must not be started.
+            on_error() {
+              echo "ERROR: deployment failed (line $1)."
+              if [ "$SERVICE_INSTALLED" -eq 1 ]; then
+                sudo systemctl status "$SERVICE_NAME" --no-pager || true
+                sudo journalctl -u "$SERVICE_NAME" -n 50 --no-pager || true
+              fi
+            }
+            trap 'on_error $LINENO' ERR
+
             echo "=================================="
             echo "Starting deployment"
             echo "=================================="
 
-            # Navigate to project
             cd "$DEPLOY_PATH"
 
-            # Update source code (frontend is static and served as-is)
-            echo "Updating source code..."
+            # Fetch first: if GitHub is unreachable, the running API is untouched.
+            echo "Fetching source code..."
             git fetch origin main
-            git reset --hard origin/main
 
             # Load NVM if installed (nvm.sh is not compatible with `set -u`)
             export NVM_DIR="$HOME/.nvm"
@@ -59,35 +75,60 @@ jobs:
               set -u
             fi
 
-            echo "Node version:"
-            node --version
+            echo "Node version: $(node --version)"
+            echo "NPM version:  $(npm --version)"
 
-            echo "NPM version:"
-            npm --version
-
-            # Install backend dependencies (no build step: plain Node.js)
-            echo "Installing backend dependencies..."
-            cd "$BACKEND_PATH"
-
-            if [ -f package-lock.json ]; then
-              npm ci --omit=dev
+            # 1. Stop the API, so it never runs against half-replaced files.
+            if [ "$SERVICE_INSTALLED" -eq 1 ]; then
+              echo "Stopping $SERVICE_NAME..."
+              sudo systemctl stop "$SERVICE_NAME"
             else
-              npm install --omit=dev
+              echo "WARNING: $SERVICE_NAME.service is not installed; the API will not be stopped or started."
             fi
 
-            # The systemd service is installed manually by an administrator
-            # (see backend/README.md). Until then, skip the restart.
-            if ! systemctl cat "$SERVICE_NAME" >/dev/null 2>&1; then
-              echo "WARNING: $SERVICE_NAME.service is not installed; skipping API restart."
+            # 2. Update the code (the frontend is static and served as-is).
+            echo "Updating source code..."
+            git reset --hard origin/main
+
+            # 3. Clean: remove installed dependencies. Never `git clean -x`,
+            #    it would delete backend/.env.
+            echo "Cleaning backend dependencies..."
+            cd "$BACKEND_PATH"
+            rm -rf node_modules
+
+            # 4. Install production dependencies exactly as locked.
+            echo "Installing backend dependencies..."
+            if [ -f package-lock.json ]; then
+              npm ci --omit=dev --no-audit --no-fund
+            else
+              npm install --omit=dev --no-audit --no-fund
+            fi
+
+            # 5. Build check. The backend is plain Node.js (no compile step),
+            #    so check the syntax of every file and that the app and all
+            #    its dependencies load, without starting the server.
+            echo "Checking backend..."
+            find src -name '*.js' -not -path 'src/generated/*' -print0 | xargs -0 -n1 node --check
+            node --input-type=module -e "await import('./src/app.js'); await import('./src/db.js');"
+            echo "Backend check passed."
+
+            if [ "$SERVICE_INSTALLED" -eq 0 ]; then
               echo "Frontend deployed. See backend/README.md to install the service."
               exit 0
             fi
 
-            # Restart API using systemd
-            echo "Restarting $SERVICE_NAME..."
-            sudo systemctl restart "$SERVICE_NAME"
+            # Warn when the unit in the repository differs from the installed
+            # one. Installing it stays a manual, reviewed step for an admin.
+            if ! diff -q deployment/geography-game-api.service.example \
+                 "/etc/systemd/system/$SERVICE_NAME.service" >/dev/null 2>&1; then
+              echo "NOTE: the installed unit differs from deployment/geography-game-api.service.example."
+            fi
 
-            # Verify the service is running and answering on loopback
+            # 6. Start the API.
+            echo "Starting $SERVICE_NAME..."
+            sudo systemctl start "$SERVICE_NAME"
+
+            # 7. Verify the service is running and answering on loopback.
             echo "Checking API health..."
             for attempt in $(seq 1 10); do
               if curl -fsS "$HEALTH_URL" >/dev/null; then
@@ -97,9 +138,7 @@ jobs:
 
               if [ "$attempt" -eq 10 ]; then
                 echo "ERROR: API did not become healthy."
-                sudo systemctl status "$SERVICE_NAME" --no-pager || true
-                sudo journalctl -u "$SERVICE_NAME" -n 50 --no-pager || true
-                exit 1
+                false
               fi
 
               sleep 2

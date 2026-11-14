@@ -139,11 +139,13 @@ sudo chmod 640 "$APP/.env"
 sudo find "$APP" -type d -exec chmod g+s {} +
 ```
 
-The automated deploy (`deploy.yml`) runs `sudo systemctl restart geography-game-api` as the deploy user. That user needs passwordless sudo for that command, for example through `/etc/sudoers.d/geography-game-api` (edit it with `sudo visudo -f`):
+The automated deploy (`deploy.yml`) runs these steps as the deploy user: stop the service, update the code, delete `node_modules`, `npm ci --omit=dev`, check the code (syntax, and that the app and its dependencies load), start the service, then check `/api/health`. If any step fails, the API stays stopped and the job prints its status and recent logs. The deploy user needs passwordless sudo for the `systemctl` and `journalctl` commands, for example through `/etc/sudoers.d/geography-game-api` (edit it with `sudo visudo -f`):
 
 ```
-<deploy-user> ALL=(root) NOPASSWD: /usr/bin/systemctl restart geography-game-api, /usr/bin/systemctl status geography-game-api *, /usr/bin/systemctl is-active --quiet geography-game-api, /usr/bin/journalctl -u geography-game-api *
+<deploy-user> ALL=(root) NOPASSWD: /usr/bin/systemctl stop geography-game-api, /usr/bin/systemctl start geography-game-api, /usr/bin/systemctl restart geography-game-api, /usr/bin/systemctl status geography-game-api *, /usr/bin/systemctl is-active --quiet geography-game-api, /usr/bin/journalctl -u geography-game-api *
 ```
+
+The deploy never installs or changes the unit file in `/etc/systemd/system`. That would let anyone who can push to `main` run code as root. It only prints a note when the installed unit differs from `deployment/geography-game-api.service.example`. An administrator then installs it by hand (step 5).
 
 `geogame` also needs execute (traverse) permission on every parent directory:
 
