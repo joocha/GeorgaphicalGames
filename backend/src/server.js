@@ -13,7 +13,10 @@ if (!config.telegramBotToken || !config.sessionSecret) {
 
 const app = createApp({ config, pool });
 
-const server = app.listen(config.port, config.host, () => {
+// Express 5 also calls this callback with the error when listen fails
+// (e.g. EADDRINUSE); the 'error' handler below reports that case.
+const server = app.listen(config.port, config.host, (err) => {
+  if (err) return;
   console.log(`Geography Game API listening on http://${config.host}:${config.port} (${config.env})`);
 });
 
