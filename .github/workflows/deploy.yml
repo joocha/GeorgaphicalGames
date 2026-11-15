@@ -112,9 +112,22 @@ jobs:
             node --input-type=module -e "await import('./src/app.js'); await import('./src/db.js');"
             echo "Backend check passed."
 
+            # The Mini App needs the API for sign-in, so a deploy that can't
+            # restart it fails instead of silently leaving old code running.
             if [ "$SERVICE_INSTALLED" -eq 0 ]; then
-              echo "Frontend deployed. See backend/README.md to install the service."
-              exit 0
+              echo "ERROR: $SERVICE_NAME.service is not installed, so the API was not restarted."
+              echo "The frontend files are updated, but any API process started by hand still runs the old code."
+              echo "Install the service once (backend/README.md, 'Production: systemd'), then re-run this deploy."
+              exit 1
+            fi
+
+            # The service is stopped, so nothing else may answer on port 3020.
+            # Otherwise the new service can't bind it (it would crash-loop) and
+            # the health check below would be answered by the stale process.
+            if curl -fsS -m 3 "$HEALTH_URL" >/dev/null 2>&1; then
+              echo "ERROR: something other than $SERVICE_NAME is serving $HEALTH_URL (an API started by hand?)."
+              echo "Stop it (e.g. 'sudo ss -ltnp sport = :3020' shows the PID), then re-run this deploy."
+              exit 1
             fi
 
             # Warn when the unit in the repository differs from the installed
