@@ -31,11 +31,11 @@ Health check: `GET /api/health` returns `{"status":"ok","uptime":<seconds>}`.
 
 How the Telegram Mini App (`index.html`) uses it:
 
-1. **Launch.** The app sends `Telegram.WebApp.initData` to `POST /api/auth/telegram`. The API checks Telegram's signature with `TELEGRAM_BOT_TOKEN` and the `auth_date` age. On first launch it registers the player (`users`, `user_profiles`, `auth_identities`) in one transaction. On every launch it refreshes the profile (name, photo, language), `provider_data` (username, premium, launch context such as `start_param`) and the `last_*` timestamps. It returns an access token and the player's personal bests.
+1. **Launch.** The app shows a sign-in screen and sends `Telegram.WebApp.initData` to `POST /api/auth/telegram`. The API checks Telegram's signature with `TELEGRAM_BOT_TOKEN` and that `auth_date` is no older than `TELEGRAM_AUTH_MAX_AGE` seconds (default 300). It reads the Telegram user ID only from the verified data, never from `initDataUnsafe` or other request fields. On first launch it registers the player (`users`, `user_profiles`, `auth_identities`) in one transaction. On every launch it refreshes the profile (name, photo, language), `provider_data` (username, premium, launch context such as `start_param`) and the `last_*` timestamps. It returns an access token and the player's personal bests. The game opens only after this succeeds.
 2. **Play.** `POST /api/sessions` opens a game session (`in_progress`) for the chosen mode. Unfinished sessions of the same game are closed as `abandoned`.
 3. **Finish.** `POST /api/sessions/:id/complete` checks the result against the mode's rules, completes the session, and stores the result and a `game_result.recorded` outbox event in one transaction. The response says whether it is a new personal best. The Telegram back button in mid-game calls `POST /api/sessions/:id/abandon`.
 
-If the API can't be reached, or the app is opened outside Telegram, the game still works and keeps bests on the device, as before.
+Inside Telegram the game needs a successful sign-in. If it fails, the app shows why: "Try again" if the server can't be reached, "Close" (reopen from the bot) if Telegram's data is invalid or expired. Set `REQUIRE_LOGIN = false` in `index.html` to fall back to offline play instead. Opened in a normal browser, outside Telegram, the game works without the API and keeps bests on the device, as before.
 
 | Method and path | Auth | Body | Response |
 |---|---|---|---|
@@ -45,9 +45,9 @@ If the API can't be reached, or the app is opened outside Telegram, the game sti
 | `POST /api/sessions/:id/complete` | Bearer | `{score, correctCount, bestStreak?, stars?, details?}` | `201` `{result, best:{metric, value, previous, isNew}}` |
 | `POST /api/sessions/:id/abandon` | Bearer | | `204` |
 
-Errors are `{error, code}`: `400/422` bad input or an impossible result, `401` invalid `initData` or token, `404` unknown session or mode, `409` session already finished, `503` the database or login isn't configured. `total_rounds`, `duration_ms` and `xp_earned` are set by the server, never by the client.
+Errors are `{error, code}`: `400/422` bad input or an impossible result, `401` invalid `initData` or token (code `invalid_init_data` or `unauthorized`), or genuine but expired `initData` (code `init_data_expired`), `404` unknown session or mode, `409` session already finished, `503` the database or login isn't configured. `total_rounds`, `duration_ms` and `xp_earned` are set by the server, never by the client.
 
-The token is a signed, stateless `Bearer` token (HMAC with `SESSION_SECRET`, lifetime `SESSION_TTL_SECONDS`). The Mini App gets a new one on every launch and signs in again by itself if it expires.
+The token is a signed, stateless `Bearer` token (HMAC with `SESSION_SECRET`, lifetime `SESSION_TTL_SECONDS`). The Mini App keeps it in memory only, gets a new one on every launch, and signs in again by itself when it runs out. If the launch data is by then older than `TELEGRAM_AUTH_MAX_AGE`, renewal fails and the app shows "Session expired": the player reopens the Mini App, and Telegram signs fresh data.
 
 Without `DATABASE_URL`, `TELEGRAM_BOT_TOKEN` or `SESSION_SECRET`, the server still starts and `/api/health` still works (the deploy checks it), but the player endpoints answer `503`.
 

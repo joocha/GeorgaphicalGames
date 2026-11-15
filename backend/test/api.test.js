@@ -14,7 +14,7 @@ const BOT_TOKEN = '123456:TEST_BOT_TOKEN';
 const config = {
   telegramBotToken: BOT_TOKEN,
   sessionSecret: 'test-session-secret-0123456789abcdef',
-  telegramAuthMaxAge: 86_400,
+  telegramAuthMaxAge: 300,
   sessionTtl: 3600,
 };
 
@@ -95,8 +95,23 @@ test('rejects forged, missing and expired initData', async () => {
   assert.equal((await call('POST', '/auth/telegram', { body: { initData: forged } })).status, 401);
   assert.equal((await call('POST', '/auth/telegram', { body: {} })).status, 401);
 
-  const old = initDataFor(TG_USER, { authDate: Math.floor(Date.now() / 1000) - 2 * 86_400 });
+  const old = initDataFor(TG_USER, { authDate: Math.floor(Date.now() / 1000) - 301 });
   const res = await call('POST', '/auth/telegram', { body: { initData: old } });
+  assert.equal(res.status, 401);
+  assert.equal(res.body.code, 'init_data_expired');
+
+  const unsigned = new URLSearchParams({ user: JSON.stringify(TG_USER), auth_date: String(Math.floor(Date.now() / 1000)) });
+  const noHash = await call('POST', '/auth/telegram', { body: { initData: unsigned.toString() } });
+  assert.equal(noHash.status, 401);
+  assert.equal(noHash.body.code, 'invalid_init_data');
+
+  assert.equal((await db.query('SELECT count(*)::int AS n FROM users')).rows[0].n, 0);
+});
+
+test('a changed user ID in signed initData is rejected', async () => {
+  const params = new URLSearchParams(initDataFor(TG_USER));
+  params.set('user', JSON.stringify({ ...TG_USER, id: 111 }));
+  const res = await call('POST', '/auth/telegram', { body: { initData: params.toString() } });
   assert.equal(res.status, 401);
   assert.equal(res.body.code, 'invalid_init_data');
 });
@@ -132,6 +147,30 @@ test('next launch logs the same player in and refreshes the profile', async () =
   assert.equal(res.body.player.profile.displayName, 'Nina B');
   assert.equal(res.body.player.profile.avatarUrl, 'https://t.me/i/userpic/320/x.jpg');
   assert.equal((await db.query('SELECT count(*)::int AS n FROM users')).rows[0].n, 1);
+});
+
+test('a different Telegram user gets their own account', async () => {
+  const other = { id: 555000111, first_name: 'Giorgi', username: 'giorgi' };
+  const res = await call('POST', '/auth/telegram', { body: { initData: initDataFor(other) } });
+  assert.equal(res.status, 201);
+  assert.notEqual(res.body.player.id, userId);
+  assert.deepEqual(res.body.player.telegram, { id: '555000111', username: 'giorgi' });
+
+  const me = await call('GET', '/me', { token: res.body.token });
+  assert.equal(me.body.player.id, res.body.player.id);
+  assert.equal(me.body.player.profile.displayName, 'Giorgi');
+});
+
+test('Telegram IDs sent outside initData are ignored', async () => {
+  // Valid initData for another player plus fields claiming to be TG_USER:
+  // the API signs in whoever Telegram signed for, never the claimed ID.
+  const other = { id: 555000111, first_name: 'Giorgi' };
+  const res = await call('POST', '/auth/telegram?user_id=987654321', {
+    body: { initData: initDataFor(other), user: TG_USER, telegramId: TG_USER.id, userId },
+  });
+  assert.equal(res.status, 200);
+  assert.notEqual(res.body.player.id, userId);
+  assert.equal(res.body.player.telegram.id, '555000111');
 });
 
 test('game endpoints need a valid token', async () => {

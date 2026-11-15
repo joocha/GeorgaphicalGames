@@ -72,7 +72,7 @@ export function createApp({ config, pool }) {
         maxAgeSeconds: config.telegramAuthMaxAge,
       });
     } catch (err) {
-      if (err instanceof InitDataError) throw new HttpError(401, 'invalid_init_data', err.message);
+      if (err instanceof InitDataError) throw new HttpError(401, err.code, err.message);
       throw err;
     }
 

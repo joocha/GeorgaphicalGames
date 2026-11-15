@@ -89,13 +89,29 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
 .newbest{color:var(--good);font-weight:700}
 .sync{color:var(--hint);font-size:12px;text-align:center;min-height:1.2em}
 .sync.ok{color:var(--good)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* sign-in */
+.gate{justify-content:center;align-items:center;gap:14px;text-align:center}
+.gate h2{margin:0;font-size:22px}
+.gate p{margin:0;color:var(--hint);max-width:320px}
+.gate .cta{max-width:320px;margin-top:8px}
+.spin{width:36px;height:36px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.spin{animation-duration:2.4s}}
 </style>
 </head>
 <body>
 
+<!-- SIGN-IN: inside Telegram the game opens only after the API has signed the player in -->
+<section class="screen gate pad" id="sAuth" aria-live="polite">
+  <div class="spin" id="authSpin"></div>
+  <h2 id="authTitle">Starting…</h2>
+  <p id="authMsg"></p>
+  <button class="cta" id="authBtn" hidden></button>
+</section>
+
 <!-- START -->
-<section class="screen start pad" id="sStart">
+<section class="screen start pad" id="sStart" hidden>
   <div>
     <div class="hello" id="hello">Hi, explorer!</div>
     <h1>Atlas Quest</h1>
@@ -129,10 +145,12 @@ const GAME_LINK = "https://t.me/YOUR_BOT_USERNAME/play"; // your Mini App link, 
 const ROUNDS = 10;
 const API_BASE = "/api";                  // Atlas Quest API (same origin, proxied by Nginx)
 const API_GAME = "telegram_country_quiz"; // game code in the API's catalog
+const REQUIRE_LOGIN = true;               // in Telegram, play only once the API has signed the player in (false: fall back to offline play)
 
 /* ===== TELEGRAM ===== */
 const tg = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData !== undefined ? window.Telegram.WebApp : null;
 const inTG = !!(tg && tg.platform && tg.platform !== "unknown");
+const mustSignIn = inTG && REQUIRE_LOGIN;
 if(tg){try{tg.ready();tg.expand();tg.disableVerticalSwipes&&tg.disableVerticalSwipes();tg.setHeaderColor&&tg.setHeaderColor("bg_color")}catch(e){}}
 const haptic=(t)=>{try{if(!inTG)return;if(t==="tap")tg.HapticFeedback.impactOccurred("light");else tg.HapticFeedback.notificationOccurred(t)}catch(e){}};
 const canCloud=()=>inTG&&tg.CloudStorage&&tg.isVersionAtLeast&&tg.isVersionAtLeast("6.9");
@@ -142,12 +160,15 @@ const store={
 };
 
 /* ===== API =====
-   Inside Telegram the Mini App signs the player in with Telegram's initData:
-   the API checks the signature, registers the player on first launch (user,
-   profile, Telegram identity) and returns an access token. Each game opens a
-   session on the server and records its result there. If the API can't be
-   reached, the game still works and keeps scores on the device. */
-const auth={token:null,player:null,loginP:null};
+   Inside Telegram the Mini App signs the player in with Telegram's signed
+   initData (never initDataUnsafe): the API checks the signature and age,
+   registers the player on first launch (user, profile, Telegram identity)
+   and returns an access token, kept in memory only. The game opens once that
+   has worked. Each game opens a session on the server and records its result
+   there. In a normal browser there is no Telegram login: the game is played
+   locally and scores stay on the device. */
+const auth={token:null,expiresAt:0,player:null,loginP:null,error:null,
+  state:"initializing"}; // initializing | authenticating | authenticated | failed | expired
 async function apiFetch(method,path,body){
   const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),8000);
   try{
@@ -156,25 +177,70 @@ async function apiFetch(method,path,body){
       ...(auth.token?{Authorization:"Bearer "+auth.token}:{})},
       body:body===undefined?undefined:JSON.stringify(body)});
     const data=r.status===204?null:await r.json().catch(()=>null);
-    if(!r.ok){const e=new Error((data&&data.error)||("HTTP "+r.status));e.status=r.status;throw e}
+    if(!r.ok){const e=new Error((data&&data.error)||("HTTP "+r.status));e.status=r.status;e.code=data&&data.code;throw e}
     return data;
   }finally{clearTimeout(t)}
 }
+// Resolves to the login response, or null (the reason is in auth.error).
 function login(){
-  if(!(inTG&&tg.initData))return Promise.resolve(null);
+  if(auth.loginP)return auth.loginP;
+  if(!(inTG&&tg.initData)){auth.error={code:"no_init_data"};return Promise.resolve(null)}
+  auth.error=null;
   return auth.loginP=apiFetch("POST","/auth/telegram",{initData:tg.initData,platform:tg.platform,version:tg.version})
-    .then(d=>{auth.token=d.token;auth.player=d.player;return d})
-    .catch(e=>{console.warn("Atlas Quest API login failed:",e.message);auth.token=null;return null})
+    .then(d=>{auth.token=d.token;auth.expiresAt=Date.parse(d.expiresAt)||0;auth.player=d.player;return d})
+    .catch(e=>{console.warn("Atlas Quest API login failed:",e.message);auth.token=null;auth.error=e;return null})
     .finally(()=>{auth.loginP=null});
 }
-// Authenticated call; signs in again once if the token has expired.
+// Authenticated call; signs in again once if the token has expired. If
+// Telegram's launch data is too old for that, the session has expired.
 async function api(method,path,body){
   if(auth.loginP)await auth.loginP;
   if(!auth.token)throw new Error("offline");
   try{return await apiFetch(method,path,body)}
-  catch(e){if(e.status!==401||!(await login()))throw e;return apiFetch(method,path,body)}
+  catch(e){
+    if(e.status!==401)throw e;
+    if(await login())return apiFetch(method,path,body);
+    if(auth.error&&auth.error.status===401)auth.state="expired";
+    throw e;
+  }
 }
 const online=()=>!!auth.token;
+
+/* ===== SIGN-IN SCREEN ===== */
+function gate(state){
+  auth.state=state;
+  const e=auth.error||{},busy=state==="initializing"||state==="authenticating";
+  let title,msg="",btn=null;
+  if(state==="initializing")title="Starting…";
+  else if(state==="authenticating"){title="Signing you in…";msg="Checking your Telegram account."}
+  else if(state==="expired"){title="Session expired";msg="Close Atlas Quest and open it again from the bot to keep playing.";btn="close"}
+  else{title="Couldn't sign you in";
+    if(e.code==="no_init_data"){msg="Open Atlas Quest from the bot's Play button.";btn="close"}
+    else if(e.status===401){msg="Telegram couldn't confirm your account. Close Atlas Quest and open it again from the bot.";btn="close"}
+    else if(e.status===503){msg="The game server isn't ready yet. Please try again in a moment.";btn="retry"}
+    else if(e.status){msg="Something went wrong on the game server. Please try again.";btn="retry"}
+    else{msg="Can't reach the game server. Check your connection and try again.";btn="retry"}}
+  $("authSpin").hidden=!busy;$("authTitle").textContent=title;$("authMsg").textContent=msg;
+  const b=$("authBtn");b.hidden=!btn;b.textContent=btn==="close"?"Close":"Try again";
+  b.onclick=()=>{haptic("tap");if(btn==="close")tg.close();else authenticate().then(ok=>ok&&goStart())};
+  if(!busy)haptic(state==="expired"?"warning":"error");
+  clearInterval(spotT);show("sAuth");
+}
+// Telegram only. Resolves to true once the player is signed in.
+async function authenticate(){
+  const wasSignedIn=auth.state==="authenticated";
+  gate("authenticating");
+  const d=await login();
+  if(!d){gate(auth.error.code==="init_data_expired"||(wasSignedIn&&auth.error.status===401)?"expired":"failed");return false}
+  auth.state="authenticated";signedIn(d);return true;
+}
+// Before each game: a valid token, renewed if it has run out.
+async function ensureSession(){
+  if(!mustSignIn)return true;
+  if(auth.state==="expired"){gate("expired");return false}
+  if(auth.token&&Date.now()<auth.expiresAt-30e3)return true;
+  return authenticate();
+}
 
 /* ===== MAP DATA ===== */
 const MAP = /*MAPDATA*/;
@@ -222,28 +288,34 @@ function makeMap(host,onTap){
 const $=id=>document.getElementById(id);
 const startMap=makeMap($("startMap"));
 let level="easy",best={easy:null,hard:null},spotT;
-const name=inTG&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.first_name;
-if(name)$("hello").textContent=`Hi, ${name}!`;
 function showBest(){const b=best[level];$("bestTxt").textContent=b==null?"Not played yet":`${b} points`}
 function showSync(){const el=$("syncStart");
-  el.textContent=online()?"☁️ Progress is saved to your profile":inTG&&!auth.loginP?"Offline · scores are saved on this device":"";
+  el.textContent=online()?"☁️ Progress is saved to your profile":!inTG?"Open in Telegram to save your progress":!auth.loginP?"Offline · scores are saved on this device":"";
   el.classList.toggle("ok",online())}
 // Server bests per mode; keep whichever is higher, the device's or the server's.
 function mergeBests(bests){const m=bests&&bests[API_GAME];if(!m)return;
   ["easy","hard"].forEach(l=>{const v=m[l]&&m[l].best;if(v!=null&&(best[l]==null||v>best[l])){best[l]=v;store.set("best_"+l,v)}})}
+// Greets the player by the name the API verified with Telegram.
+function signedIn(d){mergeBests(d.bests);const n=d.player.profile&&d.player.profile.displayName;
+  if(n)$("hello").textContent=`Hi, ${n.split(" ")[0]}!`}
 $("level").onclick=e=>{const b=e.target.closest("button");if(!b)return;level=b.dataset.l;haptic("tap");
   $("level").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));showBest()};
 function spotlight(){const n=EASY[rnd(EASY.length)];startMap.clear();startMap.paint([n],"hl");startMap.fit([n,...nearest(n,6)],1.3,220);startMap.label(n)}
-function show(id){["sStart","sGame","sResult"].forEach(s=>$(s).hidden=s!==id);
+function show(id){["sAuth","sStart","sGame","sResult"].forEach(s=>$(s).hidden=s!==id);
   if(inTG){try{id==="sGame"?tg.BackButton.show():tg.BackButton.hide()}catch(e){}}}
 if(inTG){try{tg.BackButton.onClick(()=>{haptic("tap");leaveGame();goStart()})}catch(e){}}
-function goStart(){show("sStart");spotlight();clearInterval(spotT);spotT=setInterval(spotlight,2500);showBest();showSync()}
+function goStart(){
+  if(mustSignIn&&auth.state!=="authenticated"){gate(auth.state==="expired"?"expired":"failed");return}
+  show("sStart");spotlight();clearInterval(spotT);spotT=setInterval(spotlight,2500);showBest();showSync()}
 $("play").onclick=()=>{haptic("tap");startGame()};
 
 /* ===== GAME ===== */
 const gameMap=makeMap($("gameMap"),n=>tapCountry(n));
 let G;
-function startGame(){
+let starting=false;
+async function startGame(){
+  if(starting)return;
+  if(mustSignIn){starting=true;const ok=await ensureSession().finally(()=>{starting=false});if(!ok)return}
   clearInterval(spotT);
   const pool=shuffle(level==="easy"?EASY:ALL).slice(0,ROUNDS);
   G={qs:pool.map((n,i)=>({n,type:i%2?"name":"find"})),i:0,score:0,correct:0,streak:0,bestStreak:0,res:[],done:false};
@@ -332,7 +404,7 @@ function finish(){
   saved.then(d=>{const el=$("syncResult");
     if(d&&d.best&&d.best.value!=null&&(best[lvl]==null||d.best.value>best[lvl])){best[lvl]=d.best.value;store.set("best_"+lvl,d.best.value)}
     if(!el)return;
-    el.textContent=d?"☁️ Saved to your profile":online()?"Couldn't save this game to your profile":"";
+    el.textContent=d?"☁️ Saved to your profile":mustSignIn&&auth.state==="expired"?"Session expired · this game wasn't saved to your profile":online()?"Couldn't save this game to your profile":"";
     el.classList.toggle("ok",!!d)});
   $("again").onclick=()=>{haptic("tap");startGame()};
   $("menu").onclick=()=>{haptic("tap");goStart()};
@@ -343,14 +415,18 @@ function finish(){
   };
 }
 
-/* ===== BOOT ===== */
-const loginDone=login();
-Promise.all([store.get("best_easy"),store.get("best_hard")]).then(([e,h])=>{
-  best.easy=e?+e:null;best.hard=h?+h:null;goStart();
-  loginDone.then(d=>{
-    if(d){mergeBests(d.bests);const n=d.player.profile&&d.player.profile.displayName;if(n)$("hello").textContent=`Hi, ${n.split(" ")[0]}!`}
-    if(!$("sStart").hidden){showBest();showSync()}
-  })});
+/* ===== BOOT =====
+   Telegram: Initializing → Authenticating → start screen (or an error).
+   Browser, or REQUIRE_LOGIN off: the start screen opens right away. */
+const bestsP=Promise.all([store.get("best_easy"),store.get("best_hard")]).then(([e,h])=>{best.easy=e?+e:null;best.hard=h?+h:null});
+if(mustSignIn){
+  gate("initializing");
+  Promise.all([bestsP,authenticate()]).then(([,ok])=>{if(ok)goStart()});
+}else{
+  const loginDone=login();
+  bestsP.then(()=>{goStart();
+    loginDone.then(d=>{if(d)signedIn(d);if(!$("sStart").hidden){showBest();showSync()}})});
+}
 
 </script>
 </body>

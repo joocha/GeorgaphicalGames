@@ -15,9 +15,12 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new Error(`PORT must be a valid TCP port (got "${process.env.PORT}").`);
 }
 
-function positiveInt(name, fallback) {
+// `names` are tried in order; later ones are older spellings kept so an
+// existing .env keeps working.
+function positiveInt(names, fallback) {
+  const name = [].concat(names).find((n) => process.env[n] !== undefined && process.env[n] !== '');
+  if (!name) return fallback;
   const raw = process.env[name];
-  if (raw === undefined || raw === '') return fallback;
   const value = Number.parseInt(raw, 10);
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error(`${name} must be a positive integer (got "${raw}").`);
@@ -39,7 +42,9 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL || '',
   telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || '',
   // Reject Telegram initData older than this (seconds since auth_date).
-  telegramAuthMaxAge: positiveInt('TELEGRAM_AUTH_MAX_AGE_SECONDS', 86_400),
+  // Telegram signs fresh initData on every launch, so a short window only
+  // limits how long a leaked copy can be replayed.
+  telegramAuthMaxAge: positiveInt(['TELEGRAM_AUTH_MAX_AGE', 'TELEGRAM_AUTH_MAX_AGE_SECONDS'], 300),
   sessionSecret: sessionSecret.length >= 32 ? sessionSecret : '',
   // Lifetime of the API access token returned by /api/auth/telegram.
   sessionTtl: positiveInt('SESSION_TTL_SECONDS', 86_400),

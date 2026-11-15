@@ -11,7 +11,15 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 const MAX_INIT_DATA_LENGTH = 8192;
 
-export class InitDataError extends Error {}
+// `code` is sent to the client: "init_data_expired" means the launch data
+// was genuine but too old (the player has to reopen the Mini App), anything
+// else is "invalid_init_data".
+export class InitDataError extends Error {
+  constructor(message, code = 'invalid_init_data') {
+    super(message);
+    this.code = code;
+  }
+}
 
 export function verifyTelegramInitData(initData, botToken, { maxAgeSeconds, now = Date.now() } = {}) {
   if (typeof initData !== 'string' || initData.length === 0 || initData.length > MAX_INIT_DATA_LENGTH) {
@@ -42,7 +50,7 @@ export function verifyTelegramInitData(initData, botToken, { maxAgeSeconds, now 
   }
   const ageSeconds = now / 1000 - authDate;
   if (maxAgeSeconds && ageSeconds > maxAgeSeconds) {
-    throw new InitDataError('initData has expired');
+    throw new InitDataError('initData has expired', 'init_data_expired');
   }
   if (ageSeconds < -300) {
     throw new InitDataError('initData auth_date is in the future');

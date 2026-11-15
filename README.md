@@ -26,7 +26,7 @@ Open either HTML file in a browser. To host it for free with **GitHub Pages**:
 1. In Telegram, message **@BotFather** and send `/newbot` to create a bot.
 2. Send `/newapp`, choose your bot, set the short name `play`, and paste your GitHub Pages link.
 3. In `index.html`, replace `YOUR_BOT_USERNAME` in `GAME_LINK` with your bot's username, then commit.
-4. To save players' progress, host `index.html` on the same domain as the API (Nginx proxies `/api/`). Set `TELEGRAM_BOT_TOKEN`, `SESSION_SECRET` and `DATABASE_URL` in `backend/.env`. See [backend/README.md](backend/README.md#api). `API_BASE` in `index.html` sets where the app looks for the API.
+4. To save players' progress, host `index.html` on the same domain as the API (Nginx proxies `/api/`). Set `TELEGRAM_BOT_TOKEN`, `SESSION_SECRET` and `DATABASE_URL` in `backend/.env`. Inside Telegram the game opens only after the API has signed the player in (`REQUIRE_LOGIN` in `index.html`). See [backend/README.md](backend/README.md#api). `API_BASE` in `index.html` sets where the app looks for the API.
 
 Players open `t.me/<your_bot>/play`. The same link works in a normal browser, so it can be shared in WhatsApp too.
 
