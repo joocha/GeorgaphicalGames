@@ -1,0 +1,202 @@
+{
+  "level": "hydro",
+  "status": "verified",
+  "reviewedBy": "seed:v2.0.0",
+  "reviewNote": "v2.0.0 sample set. Facts checked on 2026-11-17 against the sources named on each question and object (AI-assisted build); answers with a `fact` reference are derived from geo-objects.json by the validator. A human spot-check is recommended before wide release.",
+  "questions": [
+    {
+      "code": "hydro.danube.countries", "category": "rivers", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select every country the Danube flows through or along.",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "danube",
+      "map": { "focus": { "area": [36, 3, 54, 36] } },
+      "fact": { "object": "danube", "countries": "flows_through" },
+      "explanation": "The Danube starts at Donaueschingen in Germany and runs about 2,850 km to the Black Sea, through or along Austria, Slovakia, Hungary, Croatia, Serbia, Romania, Bulgaria, Moldova and Ukraine: 10 countries in all.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.mekong.countries", "category": "rivers", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select every country the Mekong flows through.",
+      "object": "mekong",
+      "map": { "focus": { "area": [0, 85, 38, 125] } },
+      "fact": { "object": "mekong", "countries": "flows_through" },
+      "explanation": "From the Tibetan Plateau the Mekong runs through China, Myanmar, Laos, Thailand, Cambodia and Vietnam, where it reaches the South China Sea.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.nile.basin", "category": "rivers", "subcategory": "river_basins", "type": "GEO_RELATIONSHIP", "difficulty": 3,
+      "text": "The Nile basin is shared by 11 countries. Select as many as you can.",
+      "object": "nile",
+      "map": { "focus": { "area": [-14, 12, 34, 52] } },
+      "fact": { "object": "nile", "countries": "basin" },
+      "explanation": "The Nile basin covers Burundi, DR Congo, Egypt, Eritrea, Ethiopia, Kenya, Rwanda, South Sudan, Sudan, Tanzania and Uganda. The White Nile is fed by rivers rising in Burundi and Rwanda; the Blue Nile starts in Ethiopia.",
+      "source": "nile_basin_initiative"
+    },
+    {
+      "code": "hydro.amazon.countries", "category": "rivers", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select every country the Amazon River flows through.",
+      "object": "amazon",
+      "map": { "focus": { "area": [-25, -85, 13, -32] } },
+      "fact": { "object": "amazon", "countries": "flows_through" },
+      "explanation": "The Amazon rises in the Andes of Peru, passes through Colombia and crosses Brazil to the Atlantic Ocean.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.river.identify.danube", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which river is highlighted on the map?",
+      "object": "danube",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Danube", "Rhine", "Volga", "Dnieper"], "correct": ["Danube"],
+      "explanation": "That is the Danube, Europe's great east-flowing river, from Germany to the Black Sea.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.identify.nile", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which river is highlighted on the map?",
+      "object": "nile",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Nile", "Niger", "Congo", "Zambezi"], "correct": ["Nile"],
+      "explanation": "That is the Nile, flowing north from Lake Victoria through Sudan and Egypt to the Mediterranean Sea.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.identify.mississippi", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which river is highlighted on the map?",
+      "object": "mississippi",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Mississippi", "Colorado River", "Rio Grande", "Yukon"], "correct": ["Mississippi"],
+      "explanation": "That is the Mississippi, which flows south through the United States into the Gulf of Mexico.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.identify.yangtze", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which river is highlighted on the map?",
+      "object": "yangtze",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Yangtze", "Mekong", "Ganges", "Yellow River"], "correct": ["Yangtze"],
+      "explanation": "That is the Yangtze, which crosses China from the Tibetan Plateau to the East China Sea at Shanghai.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.lake.identify.victoria", "category": "lakes", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which lake is highlighted on the map?",
+      "object": "lake_victoria",
+      "map": { "focus": { "object": true, "padding": 6 }, "showObject": true },
+      "options": ["Lake Victoria", "Lake Tanganyika", "Lake Malawi", "Lake Chad"], "correct": ["Lake Victoria"],
+      "explanation": "Lake Victoria is Africa's largest lake by area, shared by Tanzania, Uganda and Kenya.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.baikal.deepest", "category": "lakes", "type": "TRUE_FALSE", "difficulty": 1,
+      "text": "True or false: Lake Baikal in Russia is the deepest lake in the world.",
+      "object": "lake_baikal",
+      "correct": ["True"],
+      "explanation": "True. Lake Baikal is up to 1,642 m deep, which also makes it the largest freshwater lake by volume.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.titicaca.countries", "category": "lakes", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Lake Titicaca, often called the highest navigable lake in the world, lies on the border of which two countries?",
+      "object": "lake_titicaca",
+      "map": { "focus": { "area": [-30, -82, 2, -50] } },
+      "fact": { "object": "lake_titicaca", "countries": "shared_by" },
+      "explanation": "Lake Titicaca lies high in the Andes on the border of Peru and Bolivia, at about 3,812 m.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.lake.victoria.countries", "category": "lakes", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select the three countries that share Lake Victoria.",
+      "object": "lake_victoria",
+      "map": { "focus": { "area": [-14, 22, 10, 48] } },
+      "fact": { "object": "lake_victoria", "countries": "shared_by" },
+      "explanation": "Lake Victoria is shared by Tanzania, Uganda and Kenya.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.waterfall.angel.country", "category": "waterfalls", "type": "MAP_IDENTIFICATION", "difficulty": 2,
+      "text": "Angel Falls is the world's tallest uninterrupted waterfall. Tap the country where it is.",
+      "object": "angel_falls",
+      "map": { "focus": { "area": [-25, -85, 15, -32] } },
+      "fact": { "object": "angel_falls", "countries": "located_in" },
+      "explanation": "Angel Falls is in Venezuela. Its water drops 979 m.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.waterfall.victoria.countries", "category": "waterfalls", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Victoria Falls, on the Zambezi River, lies on the border of which two countries?",
+      "object": "victoria_falls",
+      "map": { "focus": { "area": [-32, 8, 2, 45] } },
+      "fact": { "object": "victoria_falls", "countries": "shared_by" },
+      "explanation": "Victoria Falls is on the Zambezi, on the border between Zambia and Zimbabwe. Its Lozi name, Mosi-oa-Tunya, means 'thundering smoke'.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.waterfall.identify.iguazu", "category": "waterfalls", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which waterfall is marked on the map?",
+      "object": "iguazu_falls",
+      "map": { "focus": { "object": true, "padding": 25 }, "showObject": true },
+      "options": ["Iguazu Falls", "Angel Falls", "Victoria Falls", "Niagara Falls"], "correct": ["Iguazu Falls"],
+      "explanation": "Iguazu Falls is on the Iguazu River, on the border of Argentina and Brazil.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.identify.gibraltar", "category": "straits", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which strait is marked on the map?",
+      "object": "strait_of_gibraltar",
+      "map": { "focus": { "object": true, "padding": 18 }, "showObject": true },
+      "options": ["Strait of Gibraltar", "Bosporus", "Strait of Hormuz", "Strait of Dover"], "correct": ["Strait of Gibraltar"],
+      "explanation": "The Strait of Gibraltar connects the Atlantic Ocean to the Mediterranean Sea and separates Europe from Africa.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.bosporus.connects", "category": "straits", "type": "MULTIPLE_CHOICE", "difficulty": 2,
+      "text": "Which two seas does the Bosporus in Istanbul connect?",
+      "object": "bosporus",
+      "options": ["Black Sea", "Sea of Marmara", "Aegean Sea", "Caspian Sea"],
+      "fact": { "object": "bosporus", "links": "connects" },
+      "explanation": "The Bosporus connects the Black Sea to the Sea of Marmara and forms part of the boundary between Europe and Asia.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.canal.suez.connects", "category": "canals", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "The Suez Canal connects the Mediterranean Sea with which sea?",
+      "object": "suez_canal",
+      "options": ["Red Sea", "Black Sea", "Caspian Sea", "Aegean Sea"], "correct": ["Red Sea"],
+      "explanation": "The Suez Canal, in Egypt, links the Mediterranean Sea to the Red Sea across the Isthmus of Suez.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.canal.panama.connects", "category": "canals", "subcategory": "oceans", "type": "MULTIPLE_CHOICE", "difficulty": 1,
+      "text": "Which two oceans does the Panama Canal link?",
+      "object": "panama_canal",
+      "options": ["Atlantic Ocean", "Pacific Ocean", "Indian Ocean", "Arctic Ocean"],
+      "fact": { "object": "panama_canal", "links": "connects" },
+      "explanation": "The Panama Canal connects the Caribbean Sea, part of the Atlantic Ocean, with the Pacific Ocean.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.rivers.mouths", "category": "rivers", "subcategory": "seas", "type": "MATCHING", "difficulty": 2,
+      "text": "Match each river with the sea or ocean it flows into.",
+      "options": { "left": ["Danube", "Volga", "Nile", "Amazon"], "right": ["Black Sea", "Caspian Sea", "Mediterranean Sea", "Atlantic Ocean"] },
+      "fact": { "pairs": { "objects": ["danube", "volga", "nile", "amazon"], "links": "mouth" } },
+      "explanation": "The Danube ends in the Black Sea, the Volga in the Caspian Sea, the Nile in the Mediterranean and the Amazon in the Atlantic Ocean. The Caspian has no outlet, so the Volga never reaches an ocean.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.rivers.sources", "category": "rivers", "type": "MATCHING", "difficulty": 3,
+      "text": "Match each river with the country where it rises.",
+      "options": { "left": ["Danube", "Mekong", "Amazon", "Rhine"], "right": ["Germany", "China", "Peru", "Switzerland"] },
+      "fact": { "pairs": { "objects": ["danube", "mekong", "amazon", "rhine"], "countries": "source_country" } },
+      "explanation": "The Danube starts at Donaueschingen in Germany, the Mekong on the Tibetan Plateau in China, the Amazon in the Peruvian Andes and the Rhine in the Swiss canton of Graubünden.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.caspian.largest", "category": "seas", "type": "TRUE_FALSE", "difficulty": 1,
+      "text": "True or false: the Caspian Sea is the world's largest inland body of water.",
+      "object": "caspian_sea",
+      "correct": ["True"],
+      "explanation": "True. The Caspian Sea is the largest inland body of water on Earth, often described as the world's largest lake.",
+      "source": "wikipedia"
+    }
+  ]
+}

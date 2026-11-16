@@ -55,10 +55,11 @@ model User {
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  profile    UserProfile?
-  identities AuthIdentity[]
-  sessions   GameSession[]
-  results    GameResult[]
+  profile      UserProfile?
+  identities   AuthIdentity[]
+  sessions     GameSession[]
+  results      GameResult[]
+  levelUnlocks UserLevelUnlock[]
 
   @@map("users")
 }
@@ -147,14 +148,19 @@ model GameMode {
   config           Json     @default("{}") @db.JsonB
   isActive         Boolean  @default(true) @map("is_active")
   sortOrder        Int      @default(0) @map("sort_order")
+  // v2: the level this mode belongs to (NULL for games outside the level
+  // structure, e.g. the Web Game). Level 1 = the Telegram easy/hard modes.
+  levelId          String?  @map("level_id") @db.Uuid
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   game     Game          @relation(fields: [gameId], references: [id], onDelete: Restrict)
+  level    GameLevel?    @relation(fields: [levelId], references: [id], onDelete: Restrict)
   sessions GameSession[]
   results  GameResult[]
 
   @@unique([gameId, code])
+  @@index([levelId])
   @@map("game_modes")
 }
 
@@ -164,59 +170,74 @@ model GameMode {
 
 // One play-through by one user of one game mode.
 model GameSession {
-  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         String            @map("user_id") @db.Uuid
-  gameModeId     String            @map("game_mode_id") @db.Uuid
-  status         GameSessionStatus @default(in_progress)
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String            @map("user_id") @db.Uuid
+  gameModeId      String            @map("game_mode_id") @db.Uuid
+  status          GameSessionStatus @default(in_progress)
   // Where it was played: "telegram" (inside the Telegram client) or "web"
   // (a browser). The Telegram Mini App also opens in a normal browser, so
   // this is not implied by the game.
-  clientPlatform String            @map("client_platform") @db.VarChar(32)
-  startedAt      DateTime          @default(now()) @map("started_at") @db.Timestamptz(6)
+  clientPlatform  String            @map("client_platform") @db.VarChar(32)
+  startedAt       DateTime          @default(now()) @map("started_at") @db.Timestamptz(6)
   // Set when the session becomes completed or abandoned.
-  endedAt        DateTime?         @map("ended_at") @db.Timestamptz(6)
-  updatedAt      DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  endedAt         DateTime?         @map("ended_at") @db.Timestamptz(6)
+  updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  // v2 scoring snapshot, taken from the level when the session starts so
+  // that later configuration changes never alter a session's score. NULL on
+  // sessions created before v2.0.0 (implicitly 1x).
+  levelId         String?           @map("level_id") @db.Uuid
+  scoreMultiplier Decimal?          @map("score_multiplier") @db.Decimal(5, 2)
+  scoringRules    Json?             @map("scoring_rules") @db.JsonB
+  // Rounds served by the question engine (NULL for client-run games).
+  roundsPlanned   Int?              @map("rounds_planned")
 
-  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  gameMode GameMode    @relation(fields: [gameModeId], references: [id], onDelete: Restrict)
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameMode GameMode     @relation(fields: [gameModeId], references: [id], onDelete: Restrict)
+  level    GameLevel?   @relation(fields: [levelId], references: [id], onDelete: Restrict)
   result   GameResult?
+  answers  GameAnswer[]
 
   // Target of game_results' composite foreign key: guarantees a result's
   // user and mode are exactly those of its session.
   @@unique([id, userId, gameModeId])
   @@index([userId, startedAt(sort: Desc)])
   @@index([gameModeId, startedAt])
+  @@index([levelId])
   @@map("game_sessions")
 }
 
 // The final result of a completed session. Append-only history: a new best
 // score adds a row, it never overwrites an earlier one.
 model GameResult {
-  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   // UNIQUE: at most one result per session.
-  sessionId    String   @unique @map("session_id") @db.Uuid
+  sessionId       String   @unique @map("session_id") @db.Uuid
   // Copied from the session (enforced by the composite FK) so leaderboards
   // and statistics don't need to join game_sessions.
-  userId       String   @map("user_id") @db.Uuid
-  gameModeId   String   @map("game_mode_id") @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  gameModeId      String   @map("game_mode_id") @db.Uuid
   // Points, as shown in-game.
-  score        Int
+  score           Int
   // Correctly answered rounds (quiz modes) or successful journeys.
-  correctCount Int      @map("correct_count")
-  totalRounds  Int      @map("total_rounds")
+  correctCount    Int      @map("correct_count")
+  totalRounds     Int      @map("total_rounds")
   // Border journey only: 0-3 stars per journey.
-  stars        Int?
+  stars           Int?
   // Quiz modes only: longest run of consecutive correct answers.
-  bestStreak   Int?     @map("best_streak")
+  bestStreak      Int?     @map("best_streak")
   // Web Game only: XP awarded (drives the web rank ladder).
-  xpEarned     Int?     @map("xp_earned")
-  durationMs   Int?     @map("duration_ms")
+  xpEarned        Int?     @map("xp_earned")
+  durationMs      Int?     @map("duration_ms")
   // Mode-specific breakdown (per-journey moves and hints, question kinds,
   // ...). Not used for ranking.
-  details      Json?    @db.JsonB
+  details         Json?    @db.JsonB
   // Always equals the session's ended_at (set by trigger).
-  completedAt  DateTime @default(now()) @map("completed_at") @db.Timestamptz(6)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt     DateTime @default(now()) @map("completed_at") @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  // v2: `score` = round(base_score × score_multiplier). Both NULL on results
+  // recorded before v2.0.0, whose score is kept exactly as it was (1x).
+  baseScore       Int?     @map("base_score")
+  scoreMultiplier Decimal? @map("score_multiplier") @db.Decimal(5, 2)
 
   session  GameSession @relation(fields: [sessionId, userId, gameModeId], references: [id, userId, gameModeId], onDelete: Cascade, onUpdate: Cascade)
   user     User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -264,4 +285,321 @@ model OutboxEvent {
   @@index([status, availableAt])
   @@index([aggregateType, aggregateId, createdAt])
   @@map("outbox_events")
+}
+
+// ===========================================================================
+// v2.0.0: five-level structure, question engine, geographic knowledge base.
+// Documentation: ../../docs/DATABASE_SCHEMA.md
+// ===========================================================================
+
+// ---------------------------------------------------------------------------
+// Levels and progression
+// ---------------------------------------------------------------------------
+
+// One of the five game levels. Gameplay rules that may change (multiplier,
+// unlock and completion rules, session lengths) live here, in the database,
+// so the frontend never hard-codes them. Seeded by migration.
+model GameLevel {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // 1..5. Unique; drives ordering and the "Level N" label.
+  number           Int      @unique
+  // Stable code used by the API and the content files, e.g. "hydro".
+  code             String   @unique @db.VarChar(32)
+  name             String   @db.VarChar(120)
+  shortDescription String   @map("short_description") @db.VarChar(200)
+  description      String
+  // Emoji shown on the level card.
+  icon             String   @db.VarChar(16)
+  // Final answer score = base answer score × multiplier (backend only).
+  scoreMultiplier  Decimal  @map("score_multiplier") @db.Decimal(5, 2)
+  // [{code, name}] shown on the level's introduction screen.
+  categories       Json     @default("[]") @db.JsonB
+  // When the level unlocks, e.g. {"type":"level_completed","level":1}.
+  unlockRule       Json     @map("unlock_rule") @db.JsonB
+  // When a session counts as completing the level,
+  // e.g. {"minCompletedSessions":1,"minScore":0,"minAccuracy":0}.
+  completionRule   Json     @map("completion_rule") @db.JsonB
+  // {"defaultRounds":10,"allowedRounds":[10]}.
+  sessionConfig    Json     @map("session_config") @db.JsonB
+  isActive         Boolean  @default(true) @map("is_active")
+  sortOrder        Int      @default(0) @map("sort_order")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  modes     GameMode[]
+  sessions  GameSession[]
+  unlocks   UserLevelUnlock[]
+  questions Question[]
+
+  @@map("game_levels")
+}
+
+// A level a player has unlocked. Rows written when the unlock rule is first
+// met (source "rule") make unlocks permanent: a later, stricter rule never
+// locks a level again. Administrators can also grant levels (source "admin").
+model UserLevelUnlock {
+  userId     String   @map("user_id") @db.Uuid
+  levelId    String   @map("level_id") @db.Uuid
+  // "rule", "admin" or "achievement".
+  source     String   @db.VarChar(16)
+  grantedBy  String?  @map("granted_by") @db.VarChar(64)
+  note       String?
+  unlockedAt DateTime @default(now()) @map("unlocked_at") @db.Timestamptz(6)
+
+  user  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level GameLevel @relation(fields: [levelId], references: [id], onDelete: Restrict)
+
+  @@id([userId, levelId])
+  @@index([levelId])
+  @@map("user_level_unlocks")
+}
+
+// One round of a question-engine session: which question was served, what
+// the player answered and how it was scored. Rows are created when the
+// session starts (answered_at NULL) and filled exactly once.
+model GameAnswer {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId       String    @map("session_id") @db.Uuid
+  // 0-based position in the session.
+  roundIndex      Int       @map("round_index")
+  questionId      String    @map("question_id") @db.Uuid
+  questionVersion Int       @map("question_version")
+  // Snapshot of the correct answers when the question was served.
+  correctAnswers  Json      @map("correct_answers") @db.JsonB
+  presentedAt     DateTime  @default(now()) @map("presented_at") @db.Timestamptz(6)
+  answeredAt      DateTime? @map("answered_at") @db.Timestamptz(6)
+  answer          Json?     @db.JsonB
+  // Share of the answer that was right, 0..1 (partial scoring).
+  fraction        Decimal?  @db.Decimal(5, 4)
+  isCorrect       Boolean?  @map("is_correct")
+  basePoints      Int?      @map("base_points")
+  streakBonus     Int?      @map("streak_bonus")
+  scoreMultiplier Decimal   @map("score_multiplier") @db.Decimal(5, 2)
+  // round((base_points + streak_bonus) × score_multiplier).
+  points          Int?
+  responseMs      Int?      @map("response_ms")
+
+  session  GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@unique([sessionId, roundIndex])
+  @@index([questionId])
+  @@map("game_answers")
+}
+
+// ---------------------------------------------------------------------------
+// Question bank
+// ---------------------------------------------------------------------------
+
+// A question. Only rows with verification_status = 'verified' AND is_active
+// are ever served. Imported from backend/content/ by `npm run content:import`
+// or created as drafts by n8n/AI; see docs/QUESTION_ENGINE.md.
+model Question {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // Stable key from the content files, e.g. "hydro.danube.countries".
+  code                String    @unique @db.VarChar(120)
+  levelId             String    @map("level_id") @db.Uuid
+  category            String    @db.VarChar(64)
+  subcategory         String?   @db.VarChar(64)
+  // SINGLE_CHOICE, MULTIPLE_CHOICE, MAP_IDENTIFICATION, ... (see engine).
+  questionType        String    @map("question_type") @db.VarChar(32)
+  // How the player answers: options, map_single, map_multi, pairs.
+  answerMode          String    @map("answer_mode") @db.VarChar(16)
+  // 1 (easy) .. 3 (hard).
+  difficulty          Int       @default(1) @db.SmallInt
+  questionText        String    @map("question_text")
+  questionDescription String?   @map("question_description")
+  // The geographic object the question is about, if any.
+  mapObjectType       String?   @map("map_object_type") @db.VarChar(32)
+  mapObjectId         String?   @map("map_object_id") @db.Uuid
+  // Presentation: map focus, highlighted countries/objects, layers.
+  map                 Json?     @db.JsonB
+  options             Json      @default("[]") @db.JsonB
+  correctAnswers      Json      @map("correct_answers") @db.JsonB
+  // Optional link to verified knowledge the correct answers must equal,
+  // e.g. {"object":"danube","relation":"flows_through"}.
+  factRef             Json?     @map("fact_ref") @db.JsonB
+  explanation         String?
+  basePoints          Int       @default(100) @map("base_points")
+  timeLimitSec        Int?      @map("time_limit_sec")
+  dataSourceId        String?   @map("data_source_id") @db.Uuid
+  dataYear            Int?      @map("data_year")
+  language            String    @default("en") @db.VarChar(10)
+  isActive            Boolean   @default(true) @map("is_active")
+  // draft | in_review | verified | rejected.
+  verificationStatus  String    @default("draft") @map("verification_status") @db.VarChar(16)
+  // curated | ai_generated | imported.
+  origin              String    @default("curated") @db.VarChar(16)
+  reviewedBy          String?   @map("reviewed_by") @db.VarChar(64)
+  reviewedAt          DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  reviewNote          String?   @map("review_note")
+  // Incremented by the importer whenever the content changes.
+  version             Int       @default(1)
+  contentHash         String?   @map("content_hash") @db.VarChar(64)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  level      GameLevel    @relation(fields: [levelId], references: [id], onDelete: Restrict)
+  mapObject  GeoObject?   @relation(fields: [mapObjectId], references: [id], onDelete: Restrict)
+  dataSource DataSource?  @relation(fields: [dataSourceId], references: [id], onDelete: Restrict)
+  answers    GameAnswer[]
+
+  @@index([levelId, verificationStatus, isActive])
+  @@index([mapObjectId])
+  @@index([dataSourceId])
+  @@map("question_bank")
+}
+
+// ---------------------------------------------------------------------------
+// Geographic knowledge base (the source of truth for facts)
+// ---------------------------------------------------------------------------
+
+// Where a fact comes from, with its licence and required attribution.
+model DataSource {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String    @unique @db.VarChar(64)
+  name        String    @db.VarChar(200)
+  url         String?
+  license     String    @db.VarChar(120)
+  attribution String?
+  notes       String?
+  retrievedAt DateTime? @map("retrieved_at") @db.Date
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  questions       Question[]
+  objects         GeoObject[]
+  objectCountries GeoObjectCountry[]
+  objectLinks     GeoObjectLink[]
+  resourceStats   CountryResourceStat[]
+
+  @@map("data_sources")
+}
+
+// A country. `name` is the name used on the game map; is_on_map is false for
+// countries that appear in facts but are too small for the 1:110m map
+// (e.g. Liechtenstein), so they can never be a tap answer.
+model Country {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code       String   @unique @db.VarChar(64)
+  name       String   @unique @db.VarChar(120)
+  isOnMap    Boolean  @default(true) @map("is_on_map")
+  wikidataId String?  @map("wikidata_id") @db.VarChar(16)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  objects       GeoObjectCountry[]
+  resourceStats CountryResourceStat[]
+
+  @@map("countries")
+}
+
+// Any named geographic object: river, lake, strait, peak, deposit, mineral...
+// Point objects carry lat/lon; line and area objects reference a feature of
+// a lazy-loaded map layer (layers/<layer>.json) by geometry_feature_id.
+model GeoObject {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code               String   @unique @db.VarChar(64)
+  objectType         String   @map("object_type") @db.VarChar(32)
+  name               String   @db.VarChar(120)
+  lat                Decimal? @db.Decimal(9, 6)
+  lon                Decimal? @db.Decimal(9, 6)
+  geometryLayer      String?  @map("geometry_layer") @db.VarChar(32)
+  geometryKey        String?  @map("geometry_key") @db.VarChar(64)
+  geometryFeatureId  Int?     @map("geometry_feature_id")
+  // [minX, minY, maxX, maxY] in map coordinates, for zooming.
+  bbox               Json?    @db.JsonB
+  wikidataId         String?  @map("wikidata_id") @db.VarChar(16)
+  // Type-specific facts (elevation_m, length_km, ...).
+  properties         Json     @default("{}") @db.JsonB
+  dataSourceId       String?  @map("data_source_id") @db.Uuid
+  dataYear           Int?     @map("data_year")
+  verificationStatus String   @default("draft") @map("verification_status") @db.VarChar(16)
+  notes              String?
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  dataSource    DataSource?           @relation(fields: [dataSourceId], references: [id], onDelete: Restrict)
+  countries     GeoObjectCountry[]
+  links         GeoObjectLink[]       @relation("from")
+  linkedFrom    GeoObjectLink[]       @relation("to")
+  questions     Question[]
+  resourceStats CountryResourceStat[]
+
+  @@index([objectType])
+  @@index([dataSourceId])
+  @@map("geo_objects")
+}
+
+// Object ↔ country relationship, e.g. (danube, Hungary, flows_through),
+// (alps, Italy, crosses), (nile, Kenya, basin), (kilimanjaro, Tanzania, located_in).
+model GeoObjectCountry {
+  objectId           String  @map("object_id") @db.Uuid
+  countryId          String  @map("country_id") @db.Uuid
+  relation           String  @db.VarChar(32)
+  dataSourceId       String? @map("data_source_id") @db.Uuid
+  note               String?
+  verificationStatus String  @default("draft") @map("verification_status") @db.VarChar(16)
+
+  object     GeoObject   @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  country    Country     @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  dataSource DataSource? @relation(fields: [dataSourceId], references: [id], onDelete: Restrict)
+
+  @@id([objectId, countryId, relation])
+  @@index([countryId])
+  @@index([dataSourceId])
+  @@map("geo_object_countries")
+}
+
+// Object ↔ object relationship, e.g. (bosporus, black_sea, connects),
+// (danube, black_sea, mouth), (mount_everest, himalayas, part_of_range).
+model GeoObjectLink {
+  objectId           String  @map("object_id") @db.Uuid
+  relatedObjectId    String  @map("related_object_id") @db.Uuid
+  relation           String  @db.VarChar(32)
+  dataSourceId       String? @map("data_source_id") @db.Uuid
+  note               String?
+  verificationStatus String  @default("draft") @map("verification_status") @db.VarChar(16)
+
+  object        GeoObject   @relation("from", fields: [objectId], references: [id], onDelete: Cascade)
+  relatedObject GeoObject   @relation("to", fields: [relatedObjectId], references: [id], onDelete: Cascade)
+  dataSource    DataSource? @relation(fields: [dataSourceId], references: [id], onDelete: Restrict)
+
+  @@id([objectId, relatedObjectId, relation])
+  @@index([relatedObjectId])
+  @@index([dataSourceId])
+  @@map("geo_object_links")
+}
+
+// A statistic about a country and a mineral resource. `metric` keeps mine
+// production, reserves and identified resources strictly apart; every row
+// has its reporting year and source.
+model CountryResourceStat {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  countryId          String   @map("country_id") @db.Uuid
+  // A geo_objects row with object_type = 'mineral_resource'.
+  resourceObjectId   String   @map("resource_object_id") @db.Uuid
+  // mine_production | reserves | identified_resources.
+  metric             String   @db.VarChar(32)
+  value              Decimal  @db.Decimal(20, 3)
+  unit               String   @db.VarChar(64)
+  dataYear           Int      @map("data_year")
+  isEstimate         Boolean  @default(false) @map("is_estimate")
+  // World rank for this metric and year, as published by the source.
+  rank               Int?
+  dataSourceId       String   @map("data_source_id") @db.Uuid
+  verificationStatus String   @default("draft") @map("verification_status") @db.VarChar(16)
+  note               String?
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  country    Country    @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  resource   GeoObject  @relation(fields: [resourceObjectId], references: [id], onDelete: Restrict)
+  dataSource DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Restrict)
+
+  @@unique([countryId, resourceObjectId, metric, dataYear, dataSourceId])
+  @@index([resourceObjectId, metric, dataYear])
+  @@index([dataSourceId])
+  @@map("country_resource_stats")
 }

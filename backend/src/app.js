@@ -1,9 +1,14 @@
 import express from 'express';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { verifyTelegramInitData, InitDataError } from './auth/telegram.js';
 import { issueToken, verifyToken } from './auth/token.js';
 import { HttpError } from './http-error.js';
 import { loginTelegramPlayer, getProfile, getPersonalBests } from './services/players.js';
-import { startSession, completeSession, abandonSession } from './services/sessions.js';
+import { startSession, completeSession, abandonSession, submitAnswer } from './services/sessions.js';
+import { getLevelsOverview } from './services/levels.js';
+import { getPlayerStats } from './services/stats.js';
+import { getObjectFacts, createQuestionDraft } from './services/internal.js';
+import { withTransaction } from './db.js';
 
 // The game the Telegram Mini App (index.html) plays.
 const TELEGRAM_GAME = 'telegram_country_quiz';
@@ -58,6 +63,20 @@ export function createApp({ config, pool }) {
 
   const authed = [requireDb, requireLoginConfig, requireUser];
 
+  // n8n / internal automation: a separate shared secret, never a player token.
+  const tokenDigest = (t) => createHash('sha256').update(t).digest();
+  const requireInternal = (req, res, next) => {
+    if (!config.internalApiToken) {
+      return next(new HttpError(503, 'internal_api_not_configured', 'Internal API is not configured'));
+    }
+    const header = req.get('authorization') || '';
+    const given = header.startsWith('Bearer ') ? header.slice(7) : '';
+    if (!given || !timingSafeEqual(tokenDigest(given), tokenDigest(config.internalApiToken))) {
+      return next(new HttpError(401, 'unauthorized', 'Missing or invalid internal token'));
+    }
+    next();
+  };
+
   // --- player --------------------------------------------------------------
 
   // Mini App launch: verifies Telegram initData, registers the player on
@@ -104,21 +123,54 @@ export function createApp({ config, pool }) {
     res.json({ player: { id: req.userId, profile }, bests: { [game]: bests } });
   });
 
-  // --- game sessions -------------------------------------------------------
-
-  // Body: {game, mode, clientPlatform}
-  api.post('/sessions', authed, async (req, res) => {
-    res.status(201).json(await startSession(pool, req.userId, req.body));
+  // Statistics: totals, per level, per category (all derived from history).
+  api.get('/me/stats', authed, async (req, res) => {
+    res.json(await getPlayerStats(pool, req.userId));
   });
 
-  // Body: {score, correctCount, bestStreak?, stars?, details?}
+  // --- levels --------------------------------------------------------------
+
+  // The five levels with the player's progress, unlock state and bests.
+  // Runs in a transaction because it records newly met unlock rules.
+  api.get('/levels', authed, async (req, res) => {
+    res.json(await withTransaction(pool, (db) => getLevelsOverview(db, req.userId)));
+  });
+
+  // --- game sessions -------------------------------------------------------
+
+  // Body: {game, mode, clientPlatform} or {level, mode?, rounds?, clientPlatform}
+  api.post('/sessions', authed, async (req, res) => {
+    res.status(201).json(await startSession(pool, req.userId, req.body || {}));
+  });
+
+  // Question-engine sessions only. Body: {round, answer}
+  api.post('/sessions/:id/answers', authed, async (req, res) => {
+    res.status(201).json(await submitAnswer(pool, req.userId, req.params.id, req.body || {}));
+  });
+
+  // Client-run games: {score, correctCount, bestStreak?, stars?, details?}
+  // (score is the base score; the server applies the level multiplier).
+  // Question-engine games: no body needed; the server computes the result.
   api.post('/sessions/:id/complete', authed, async (req, res) => {
-    res.status(201).json(await completeSession(pool, req.userId, req.params.id, req.body));
+    res.status(201).json(await completeSession(pool, req.userId, req.params.id, req.body || {}));
   });
 
   api.post('/sessions/:id/abandon', authed, async (req, res) => {
     await abandonSession(pool, req.userId, req.params.id);
     res.status(204).end();
+  });
+
+  // --- internal (n8n) --------------------------------------------------------
+
+  // Verified facts about one geographic object, for AI prompt building.
+  api.get('/internal/geo-objects/:code', requireDb, requireInternal, async (req, res) => {
+    res.json(await getObjectFacts(pool, req.params.code));
+  });
+
+  // Stores an AI-generated question as a draft ('in_review'); never served
+  // until approved with scripts/questions.js.
+  api.post('/internal/question-drafts', requireDb, requireInternal, async (req, res) => {
+    res.status(201).json(await createQuestionDraft(pool, req.body || {}));
   });
 
   app.use('/api', api);

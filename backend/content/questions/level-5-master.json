@@ -1,0 +1,156 @@
+{
+  "level": "master",
+  "status": "verified",
+  "reviewedBy": "seed:v2.0.0",
+  "reviewNote": "v2.0.0 sample set. Facts checked on 2026-11-17 against Wikidata, Wikipedia and the World Bank WDI API (AI-assisted build); multi-fact answers are derived by the validator from geo-objects.json where possible. A human spot-check is recommended before wide release.",
+  "questions": [
+    {
+      "code": "master.hormuz.connects", "category": "strategic_straits", "type": "MULTIPLE_CHOICE", "difficulty": 2,
+      "text": "Oil tankers leaving the Gulf pass the Strait of Hormuz. Which two bodies of water does it connect?",
+      "object": "strait_of_hormuz",
+      "options": ["Persian Gulf", "Gulf of Oman", "Red Sea", "Gulf of Aden"],
+      "fact": { "object": "strait_of_hormuz", "links": "connects" },
+      "explanation": "The Strait of Hormuz is the waterway between the Persian Gulf and the Gulf of Oman.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.bab_el_mandeb.countries", "category": "strategic_straits", "type": "GEO_RELATIONSHIP", "difficulty": 3,
+      "text": "The Bab-el-Mandeb strait links the Red Sea to the Gulf of Aden. Select the countries on its shores.",
+      "object": "bab_el_mandeb",
+      "map": { "focus": { "area": [2, 30, 26, 60] } },
+      "fact": { "object": "bab_el_mandeb", "countries": "borders" },
+      "explanation": "Bab-el-Mandeb lies between Yemen on the Arabian Peninsula and Djibouti and Eritrea in the Horn of Africa.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.route.suez_from_indian_ocean", "category": "shipping_routes", "subcategory": "strategic_straits", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "A ship sails from the Indian Ocean to the Mediterranean through the Suez Canal. Which strait must it pass to enter the Red Sea?",
+      "options": ["Bab-el-Mandeb", "Strait of Hormuz", "Strait of Malacca", "Strait of Gibraltar"], "correct": ["Bab-el-Mandeb"],
+      "explanation": "From the Gulf of Aden, ships enter the Red Sea through Bab-el-Mandeb, sail north to Suez and cross the canal into the Mediterranean.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.malacca.identify", "category": "trade_routes", "subcategory": "strategic_straits", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "This strait, between the Malay Peninsula and Sumatra, is the main shipping channel between the Indian and Pacific oceans. Which strait is it?",
+      "object": "strait_of_malacca",
+      "map": { "focus": { "object": true, "padding": 16 }, "showObject": true },
+      "options": ["Strait of Malacca", "Strait of Hormuz", "Bosporus", "Strait of Dover"], "correct": ["Strait of Malacca"],
+      "explanation": "The Strait of Malacca connects the Andaman Sea with the South China Sea and is one of the most important shipping lanes in the world.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.straits.match", "category": "strategic_straits", "type": "MATCHING", "difficulty": 2,
+      "text": "Match each strait with a body of water it opens onto.",
+      "options": { "left": ["Bosporus", "Strait of Gibraltar", "Strait of Hormuz", "Bab-el-Mandeb"], "right": ["Black Sea", "Atlantic Ocean", "Persian Gulf", "Red Sea"] },
+      "correct": [["Bosporus", "Black Sea"], ["Strait of Gibraltar", "Atlantic Ocean"], ["Strait of Hormuz", "Persian Gulf"], ["Bab-el-Mandeb", "Red Sea"]],
+      "fact": { "pairs": { "objects": ["bosporus", "strait_of_gibraltar", "strait_of_hormuz", "bab_el_mandeb"], "links": "connects", "match": "any" } },
+      "explanation": "The Bosporus opens onto the Black Sea, Gibraltar onto the Atlantic, Hormuz onto the Persian Gulf and Bab-el-Mandeb onto the Red Sea.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.suez.country", "category": "strategic_straits", "type": "MAP_IDENTIFICATION", "difficulty": 1,
+      "text": "Tap the country that the canal linking the Mediterranean and the Red Sea runs through.",
+      "object": "suez_canal",
+      "map": { "focus": { "area": [5, 0, 45, 60] } },
+      "fact": { "object": "suez_canal", "countries": "located_in" },
+      "explanation": "The Suez Canal is in Egypt, crossing the Isthmus of Suez between Africa and Asia.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.caspian.countries", "category": "complex_relationships", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select every country with a coast on the Caspian Sea.",
+      "object": "caspian_sea",
+      "map": { "focus": { "area": [28, 35, 56, 72] } },
+      "fact": { "object": "caspian_sea", "countries": "shared_by" },
+      "explanation": "Five countries border the Caspian Sea: Russia, Kazakhstan, Turkmenistan, Iran and Azerbaijan.",
+      "source": "wikidata"
+    },
+    {
+      "code": "master.andes_and_amazon", "category": "complex_relationships", "type": "GEO_RELATIONSHIP", "difficulty": 3,
+      "text": "Select every country crossed by both the Andes and the Amazon River.",
+      "map": { "focus": { "area": [-56, -88, 14, -32] } },
+      "fact": { "intersect": [ { "object": "andes", "countries": "crosses" }, { "object": "amazon", "countries": "flows_through" } ] },
+      "explanation": "The Amazon flows through Peru, Colombia and Brazil; the Andes cross seven countries but not Brazil. Only Peru and Colombia have both.",
+      "source": "wikidata"
+    },
+    {
+      "code": "master.danube_and_alps", "category": "complex_relationships", "type": "GEO_RELATIONSHIP", "difficulty": 3,
+      "text": "Select every country that both the Danube flows through and the Alps cross.",
+      "map": { "focus": { "area": [36, -4, 54, 36] } },
+      "fact": { "intersect": [ { "object": "danube", "countries": "flows_through" }, { "object": "alps", "countries": "crosses" } ] },
+      "explanation": "Only Germany and Austria are on both lists. The Danube continues through Slovakia, Hungary and the Balkans, while the Alps also cross France, Switzerland, Italy and Slovenia (and tiny Monaco and Liechtenstein).",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.amazon_rainforest.share", "category": "deserts_forests", "type": "MAP_IDENTIFICATION", "difficulty": 1,
+      "text": "Which country holds the largest share of the Amazon rainforest? Tap it.",
+      "object": "amazon_rainforest",
+      "map": { "focus": { "area": [-30, -90, 15, -30] } },
+      "fact": { "object": "amazon_rainforest", "countries": "largest_share" },
+      "explanation": "About 60% of the Amazon rainforest is in Brazil, followed by Peru (13%) and Colombia (10%).",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.atacama.country", "category": "deserts_forests", "type": "MAP_IDENTIFICATION", "difficulty": 1,
+      "text": "The Atacama, the driest non-polar desert on Earth, is in which country? Tap it.",
+      "object": "atacama_desert",
+      "map": { "focus": { "area": [-56, -88, 14, -32] } },
+      "fact": { "object": "atacama_desert", "countries": "located_in" },
+      "explanation": "The Atacama is in northern Chile.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.gobi.countries", "category": "deserts_forests", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "The Gobi Desert stretches across which two countries?",
+      "object": "gobi_desert",
+      "map": { "focus": { "area": [15, 70, 58, 135] } },
+      "fact": { "object": "gobi_desert", "countries": "covers" },
+      "explanation": "The Gobi is a large cold desert in southern Mongolia and northern China.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.sahel.position", "category": "natural_regions", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "The Sahel is a transition zone on which side of the Sahara?",
+      "object": "sahel",
+      "options": ["South", "North", "East", "West"], "correct": ["South"],
+      "explanation": "The Sahel lies between the Sahara to the north and the more humid Sudanian savannas to the south.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.climate.rainforest", "category": "climate_zones", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which climate has high temperatures, high humidity and rain all year round, with no dry season?",
+      "options": ["Tropical rainforest", "Hot desert", "Mediterranean", "Tundra"], "correct": ["Tropical rainforest"],
+      "explanation": "The tropical rainforest (equatorial) climate is usually found within 10 to 15 degrees of the equator.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.climate.koppen_bwh", "category": "climate_zones", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "The Sahara is the largest hot desert in the world. Which Köppen climate code means 'hot desert'?",
+      "object": "sahara",
+      "options": ["BWh", "Af", "Cfb", "ET"], "correct": ["BWh"],
+      "explanation": "BWh is the hot desert climate. B means dry, W desert and h hot. It is the most extensive Köppen climate type.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "master.population.density", "category": "population", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which of these countries had the highest population density in 2024?",
+      "options": ["Bangladesh", "Netherlands", "India", "Japan"], "correct": ["Bangladesh"],
+      "explanation": "Bangladesh had about 1,333 people per km² in 2024, against 534 in the Netherlands, 488 in India and 340 in Japan (World Bank).",
+      "source": "world_bank_wdi", "year": 2024
+    },
+    {
+      "code": "master.population.largest", "category": "population", "type": "MAP_IDENTIFICATION", "difficulty": 2,
+      "text": "Which country had the largest population in 2024? Tap it.",
+      "correct": ["India"],
+      "explanation": "India had about 1.45 billion people in 2024, ahead of China with about 1.41 billion (World Bank).",
+      "source": "world_bank_wdi", "year": 2024
+    },
+    {
+      "code": "master.trade.top_exporter", "category": "economic_geography", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which country exported the most goods in 2024?",
+      "options": ["China", "United States", "Germany", "Netherlands"], "correct": ["China"],
+      "explanation": "China's merchandise exports were about 3.58 trillion US dollars in 2024, ahead of the United States (2.06 trillion) and Germany (1.68 trillion), according to the World Bank.",
+      "source": "world_bank_wdi", "year": 2024
+    }
+  ]
+}

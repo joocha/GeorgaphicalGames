@@ -1,0 +1,287 @@
+{
+ "_source": "Natural Earth 1:50m (public domain), built by tools/build-layers.js. Do not edit by hand.",
+ "rivers": {
+  "danube": {
+   "id": 1,
+   "bbox": [
+    547.8,
+    116.5,
+    579.9,
+    128.7
+   ],
+   "sources": [
+    "Danube"
+   ]
+  },
+  "nile": {
+   "id": 2,
+   "bbox": [
+    583.9,
+    166.3,
+    594.3,
+    252.6
+   ],
+   "sources": [
+    "Nile",
+    "El Bahr el Abyad",
+    "Bahr el Jebel",
+    "Albert Nile",
+    "Victoria Nile"
+   ]
+  },
+  "amazon": {
+   "id": 3,
+   "bbox": [
+    295.9,
+    254.3,
+    353.7,
+    262.3
+   ],
+   "sources": [
+    "Amazonas"
+   ]
+  },
+  "mekong": {
+   "id": 4,
+   "bbox": [
+    782.1,
+    198.8,
+    794.8,
+    222.2
+   ],
+   "sources": [
+    "Mekong"
+   ]
+  },
+  "rhine": {
+   "id": 5,
+   "bbox": [
+    513.8,
+    105.9,
+    523.6,
+    114
+   ],
+   "sources": [
+    "Rhine"
+   ]
+  },
+  "volga": {
+   "id": 6,
+   "bbox": [
+    590.6,
+    88.1,
+    639.3,
+    123.2
+   ],
+   "sources": [
+    "Volga"
+   ]
+  },
+  "mississippi": {
+   "id": 7,
+   "bbox": [
+    236,
+    118.2,
+    252.7,
+    169.5
+   ],
+   "sources": [
+    "Mississippi"
+   ]
+  },
+  "yangtze": {
+   "id": 8,
+   "bbox": [
+    814.2,
+    160.5,
+    833.5,
+    168.2
+   ],
+   "sources": [
+    "Yangtze"
+   ]
+  },
+  "ganges": {
+   "id": 9,
+   "bbox": [
+    716.8,
+    164.2,
+    751.2,
+    189.7
+   ],
+   "sources": [
+    "Ganges"
+   ]
+  },
+  "congo": {
+   "id": 10,
+   "bbox": [
+    536.3,
+    243.9,
+    575.1,
+    273
+   ],
+   "sources": [
+    "Congo"
+   ]
+  },
+  "niger": {
+   "id": 11,
+   "bbox": [
+    470,
+    202.6,
+    518.8,
+    238.1
+   ],
+   "sources": [
+    "Niger"
+   ]
+  },
+  "zambezi": {
+   "id": 12,
+   "bbox": [
+    562.6,
+    280.8,
+    601.4,
+    302.3
+   ],
+   "sources": [
+    "Zambezi"
+   ]
+  },
+  "colorado": {
+   "id": 13,
+   "bbox": [
+    180,
+    137.8,
+    327.1,
+    360.8
+   ],
+   "sources": [
+    "Colorado"
+   ]
+  }
+ },
+ "lakes": {
+  "lake_baikal": {
+   "id": 1,
+   "bbox": [
+    788.1,
+    95.1,
+    805.4,
+    107
+   ],
+   "sources": [
+    "Lake Baikal"
+   ]
+  },
+  "lake_victoria": {
+   "id": 2,
+   "bbox": [
+    588,
+    248.7,
+    596.7,
+    258.3
+   ],
+   "sources": [
+    "Lake Victoria"
+   ]
+  },
+  "lake_titicaca": {
+   "id": 3,
+   "bbox": [
+    305.5,
+    292.4,
+    309.5,
+    296.1
+   ],
+   "sources": [
+    "Lago Titicaca"
+   ]
+  },
+  "lake_superior": {
+   "id": 4,
+   "bbox": [
+    244.2,
+    113.9,
+    265.6,
+    121
+   ],
+   "sources": [
+    "Lake Superior"
+   ]
+  },
+  "lake_tanganyika": {
+   "id": 5,
+   "bbox": [
+    580.7,
+    259.3,
+    586.6,
+    274.4
+   ],
+   "sources": [
+    "Lake Tanganyika"
+   ]
+  },
+  "lake_malawi": {
+   "id": 6,
+   "bbox": [
+    594.2,
+    276.5,
+    598,
+    290
+   ],
+   "sources": [
+    "Lake Malawi"
+   ]
+  },
+  "lake_chad": {
+   "id": 7,
+   "bbox": [
+    539.6,
+    213.2,
+    541,
+    214.2
+   ],
+   "sources": [
+    "Lake Chad"
+   ]
+  },
+  "lake_ladoga": {
+   "id": 8,
+   "bbox": [
+    582.9,
+    78.4,
+    591.4,
+    83.6
+   ],
+   "sources": [
+    "Lake Ladoga"
+   ]
+  },
+  "lake_balkhash": {
+   "id": 9,
+   "bbox": [
+    704,
+    119.9,
+    720.1,
+    124.9
+   ],
+   "sources": [
+    "Lake Balkhash"
+   ]
+  },
+  "dead_sea": {
+   "id": 10,
+   "bbox": [
+    598.3,
+    161.8,
+    598.8,
+    163.6
+   ],
+   "sources": [
+    "Dead Sea"
+   ]
+  }
+ }
+}

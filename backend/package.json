@@ -1,18 +1,22 @@
 {
   "name": "geography-game-api",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Backend API for Atlas Quest",
+  "description": "Backend API for GeoAIGames (Atlas Quest and the five-level geography platform)",
   "type": "module",
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch --env-file=.env src/server.js",
     "start": "node src/server.js",
-    "test": "node --test",
+    "test": "node --test test/*.test.js",
     "db:validate": "prisma validate",
     "db:format": "prisma format",
     "db:status": "prisma migrate status",
-    "db:migrate:deploy": "prisma migrate deploy"
+    "db:migrate:deploy": "prisma migrate deploy",
+    "content:check": "node scripts/content.js check",
+    "content:import": "node scripts/content.js import",
+    "questions": "node scripts/questions.js",
+    "admin:unlock": "node scripts/admin-unlock.js"
   },
   "engines": {
     "node": "^20.19 || ^22.12 || >=24.0"

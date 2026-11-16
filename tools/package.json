@@ -1,7 +1,12 @@
 {
   "name": "atlas-quest-tools",
   "private": true,
-  "description": "Rebuilds the embedded world map data for Atlas Quest",
-  "scripts": { "build-map": "node build-map.js" },
+  "description": "Rebuilds the Mini App (index.html), its embedded world map and the lazy-loaded map layers",
+  "scripts": {
+    "build-map": "node build-map.js",
+    "build-app": "node build-app.js",
+    "fetch-layers": "node fetch-layers.js",
+    "build-layers": "node build-layers.js"
+  },
   "dependencies": { "topojson-client": "^3.1.0", "world-atlas": "^2.0.2" }
 }

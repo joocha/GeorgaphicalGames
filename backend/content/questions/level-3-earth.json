@@ -1,0 +1,186 @@
+{
+  "level": "earth",
+  "status": "verified",
+  "reviewedBy": "seed:v2.0.0",
+  "reviewNote": "v2.0.0 sample set. Facts checked on 2026-11-17 against the sources named on each question and object (AI-assisted build); answers with a `fact` reference are derived from geo-objects.json by the validator. A human spot-check is recommended before wide release.",
+  "questions": [
+    {
+      "code": "earth.alps.countries", "category": "mountain_ranges", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select every country the Alps cross.",
+      "description": "Two tiny Alpine countries are too small for this map. You only need the ones you can tap.",
+      "object": "alps",
+      "map": { "focus": { "area": [38, -4, 54, 24] } },
+      "fact": { "object": "alps", "countries": "crosses" },
+      "explanation": "The Alps stretch about 1,200 km across France, Switzerland, Italy, Germany, Austria and Slovenia, plus Monaco and Liechtenstein, which are too small for this map.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.andes.countries", "category": "mountain_ranges", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select every country the Andes run through.",
+      "object": "andes",
+      "map": { "focus": { "area": [-56, -88, 14, -32] } },
+      "fact": { "object": "andes", "countries": "crosses" },
+      "explanation": "The Andes run through seven countries: Venezuela, Colombia, Ecuador, Peru, Bolivia, Chile and Argentina.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.atlas.countries", "category": "mountain_ranges", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select the three countries crossed by the Atlas Mountains.",
+      "object": "atlas_mountains",
+      "map": { "focus": { "area": [15, -20, 42, 25] } },
+      "fact": { "object": "atlas_mountains", "countries": "crosses" },
+      "explanation": "The Atlas Mountains stretch about 2,500 km through Morocco, Algeria and Tunisia, separating the Sahara from the Mediterranean and the Atlantic.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.kilimanjaro.country", "category": "peaks", "type": "MAP_IDENTIFICATION", "difficulty": 1,
+      "text": "Tap the country where Mount Kilimanjaro stands.",
+      "object": "mount_kilimanjaro",
+      "map": { "focus": { "area": [-36, -20, 38, 55] } },
+      "fact": { "object": "mount_kilimanjaro", "countries": "located_in" },
+      "explanation": "Kilimanjaro, 5,895 m, is in Tanzania. It is the highest volcano in the Eastern Hemisphere.",
+      "source": "wikidata"
+    },
+    {
+      "code": "earth.kilimanjaro.volcano", "category": "volcanoes", "type": "TRUE_FALSE", "difficulty": 1,
+      "text": "True or false: Mount Kilimanjaro is a volcano.",
+      "object": "mount_kilimanjaro",
+      "correct": ["True"],
+      "explanation": "True. Kilimanjaro is a large dormant stratovolcano in Tanzania.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.everest.range", "category": "mountain_ranges", "subcategory": "peaks", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which mountain range contains Mount Everest?",
+      "object": "mount_everest",
+      "options": ["Himalayas", "Karakoram", "Hindu Kush", "Pamir Mountains"],
+      "fact": { "object": "mount_everest", "links": "part_of_range" },
+      "explanation": "Everest is in the Mahalangur Himal sub-range of the Himalayas. At 8,849 m it is the highest mountain on Earth.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.everest.countries", "category": "peaks", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "The border between which two countries runs over the summit of Mount Everest?",
+      "object": "mount_everest",
+      "map": { "focus": { "area": [12, 62, 45, 108] } },
+      "fact": { "object": "mount_everest", "countries": "borders" },
+      "explanation": "Everest's summit marks part of the border between Nepal and China.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.mont_blanc.countries", "category": "peaks", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Mont Blanc, the highest mountain of the Alps, lies on the border of which two countries?",
+      "object": "mont_blanc",
+      "map": { "focus": { "area": [38, -4, 54, 24] } },
+      "fact": { "object": "mont_blanc", "countries": "borders" },
+      "explanation": "The Mont Blanc massif lies on the border of France and Italy. At about 4,807 m it is the highest mountain in Europe outside the Caucasus.",
+      "source": "wikidata"
+    },
+    {
+      "code": "earth.aconcagua.country", "category": "peaks", "type": "MAP_IDENTIFICATION", "difficulty": 2,
+      "text": "Aconcagua is the highest mountain outside Asia. Tap the country where it is.",
+      "object": "aconcagua",
+      "map": { "focus": { "area": [-56, -88, 14, -32] } },
+      "fact": { "object": "aconcagua", "countries": "located_in" },
+      "explanation": "Aconcagua is in Mendoza Province, Argentina, in the Andes.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.elbrus.range", "category": "mountain_ranges", "subcategory": "peaks", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Mount Elbrus is the highest peak of which mountain range?",
+      "object": "mount_elbrus",
+      "options": ["Caucasus Mountains", "Ural Mountains", "Alps", "Carpathian Mountains"],
+      "fact": { "object": "mount_elbrus", "links": "part_of_range" },
+      "explanation": "Elbrus, 5,642 m, in southern Russia, is the highest peak of the Caucasus Mountains.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.peaks.ranges", "category": "peaks", "subcategory": "mountain_ranges", "type": "MATCHING", "difficulty": 2,
+      "text": "Match each mountain with its mountain range.",
+      "options": { "left": ["Mount Everest", "Mont Blanc", "Aconcagua", "Mount Elbrus"], "right": ["Himalayas", "Alps", "Andes", "Caucasus Mountains"] },
+      "fact": { "pairs": { "objects": ["mount_everest", "mont_blanc", "aconcagua", "mount_elbrus"], "links": "part_of_range" } },
+      "explanation": "Everest is in the Himalayas, Mont Blanc in the Alps, Aconcagua in the Andes and Elbrus in the Caucasus.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.khyber.countries", "category": "passes", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "The Khyber Pass crosses the border between which two countries?",
+      "object": "khyber_pass",
+      "map": { "focus": { "area": [20, 50, 45, 85] } },
+      "fact": { "object": "khyber_pass", "countries": "connects_countries" },
+      "explanation": "The Khyber Pass is in Pakistan's Khyber Pakhtunkhwa province, along the border with Afghanistan.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.pass.identify.khyber", "category": "passes", "type": "OBJECT_IDENTIFICATION", "difficulty": 3,
+      "text": "Which mountain pass is marked on the map?",
+      "object": "khyber_pass",
+      "map": { "focus": { "object": true, "padding": 14 }, "showObject": true },
+      "options": ["Khyber Pass", "Brenner Pass", "Simplon Pass", "Great St Bernard Pass"], "correct": ["Khyber Pass"],
+      "explanation": "That is the Khyber Pass, between Pakistan and Afghanistan. The other three passes are in the Alps.",
+      "source": "wikidata"
+    },
+    {
+      "code": "earth.brenner.countries", "category": "passes", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "The Brenner Pass over the Alps forms the border between which two countries?",
+      "object": "brenner_pass",
+      "map": { "focus": { "area": [38, -4, 54, 24] } },
+      "fact": { "object": "brenner_pass", "countries": "connects_countries" },
+      "explanation": "The Brenner Pass forms the border between Austria and Italy.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.volcano.identify.fuji", "category": "volcanoes", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which volcano is marked on the map?",
+      "object": "mount_fuji",
+      "map": { "focus": { "object": true, "padding": 20 }, "showObject": true },
+      "options": ["Mount Fuji", "Mount Vesuvius", "Mount Etna", "Mount Kilimanjaro"], "correct": ["Mount Fuji"],
+      "explanation": "That is Mount Fuji, an active stratovolcano on Honshu and Japan's highest mountain at 3,776 m.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.vesuvius.country", "category": "volcanoes", "type": "MAP_IDENTIFICATION", "difficulty": 1,
+      "text": "Mount Vesuvius destroyed the Roman city of Pompeii in 79 AD. Tap the country where it stands.",
+      "object": "mount_vesuvius",
+      "map": { "focus": { "area": [30, -12, 58, 38] } },
+      "fact": { "object": "mount_vesuvius", "countries": "located_in" },
+      "explanation": "Vesuvius stands near Naples, in southern Italy.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.etna.sicily", "category": "volcanoes", "type": "TRUE_FALSE", "difficulty": 1,
+      "text": "True or false: Mount Etna is an active volcano on the island of Sicily.",
+      "object": "mount_etna",
+      "correct": ["True"],
+      "explanation": "True. Etna is an active stratovolcano on the east coast of Sicily, Italy.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.grand_canyon.river", "category": "canyons", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which river carved the Grand Canyon?",
+      "object": "grand_canyon",
+      "options": ["Colorado River", "Rio Grande", "Mississippi", "Snake River"],
+      "fact": { "object": "grand_canyon", "links": "carved_by" },
+      "explanation": "The Colorado River carved the Grand Canyon in Arizona, exposing nearly two billion years of rock layers.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.gotthard.country", "category": "tunnels", "type": "MAP_IDENTIFICATION", "difficulty": 2,
+      "text": "The Gotthard Base Tunnel, the world's longest railway tunnel, runs under the Alps in which country? Tap it.",
+      "object": "gotthard_base_tunnel",
+      "map": { "focus": { "area": [36, -10, 58, 30] } },
+      "fact": { "object": "gotthard_base_tunnel", "countries": "located_in" },
+      "explanation": "The Gotthard Base Tunnel is in Switzerland. It is the world's longest railway tunnel and the first flat, low-level route through the Alps.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "earth.kathmandu_valley.country", "category": "valleys", "type": "MAP_IDENTIFICATION", "difficulty": 2,
+      "text": "Tap the country where the Kathmandu Valley lies.",
+      "object": "kathmandu_valley",
+      "map": { "focus": { "area": [5, 60, 45, 110] } },
+      "fact": { "object": "kathmandu_valley", "countries": "located_in" },
+      "explanation": "The bowl-shaped Kathmandu Valley lies in the Himalayas of Nepal and is home to the capital, Kathmandu.",
+      "source": "wikipedia"
+    }
+  ]
+}

@@ -35,6 +35,11 @@ if (sessionSecret && sessionSecret.length < 32) {
   console.warn('SESSION_SECRET is shorter than 32 characters; player login is disabled.');
 }
 
+const internalApiToken = process.env.INTERNAL_API_TOKEN || '';
+if (internalApiToken && internalApiToken.length < 32) {
+  console.warn('INTERNAL_API_TOKEN is shorter than 32 characters; the internal API is disabled.');
+}
+
 export const config = {
   env: process.env.NODE_ENV || 'development',
   host,
@@ -48,4 +53,6 @@ export const config = {
   sessionSecret: sessionSecret.length >= 32 ? sessionSecret : '',
   // Lifetime of the API access token returned by /api/auth/telegram.
   sessionTtl: positiveInt('SESSION_TTL_SECONDS', 86_400),
+  // Shared secret for /api/internal/* (n8n). Empty: those endpoints answer 503.
+  internalApiToken: internalApiToken.length >= 32 ? internalApiToken : '',
 };

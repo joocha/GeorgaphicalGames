@@ -1,0 +1,189 @@
+{
+  "level": "resources",
+  "status": "verified",
+  "reviewedBy": "seed:v2.0.0",
+  "reviewNote": "v2.0.0 sample set. Statistics copied from USGS Mineral Commodity Summaries 2026 world tables on 2026-11-17; deposit locations and products from Wikidata/Wikipedia (AI-assisted build). Every statistical question names its year. A human spot-check is recommended before wide release.",
+  "questions": [
+    {
+      "code": "res.copper.top_producer", "category": "copper", "type": "RESOURCE_IDENTIFICATION", "difficulty": 1,
+      "text": "Which country mined the most copper in 2024? Tap it on the map.",
+      "object": "copper",
+      "fact": { "stat": { "resource": "copper", "metric": "mine_production", "year": 2024, "rank": 1 } },
+      "explanation": "Chile mined about 5.5 million tonnes of copper in 2024, nearly a quarter of the world total, ahead of DR Congo and Peru.",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.copper.top3", "category": "copper", "type": "MULTIPLE_CHOICE", "difficulty": 3,
+      "text": "Select the three countries that mined the most copper in 2024.",
+      "object": "copper",
+      "options": ["Chile", "DR Congo", "Peru", "China", "United States", "Australia"],
+      "fact": { "stat": { "resource": "copper", "metric": "mine_production", "year": 2024, "ranks": [1, 2, 3] } },
+      "explanation": "In 2024: Chile 5.51 million t, DR Congo 2.99 million t, Peru 2.74 million t. China (1.84 million t) came fourth.",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.cobalt.top_producer", "category": "cobalt", "type": "RESOURCE_IDENTIFICATION", "difficulty": 1,
+      "text": "One country mined about three-quarters of the world's cobalt in 2024. Tap it.",
+      "object": "cobalt",
+      "map": { "focus": { "area": [-36, -20, 38, 55] } },
+      "fact": { "stat": { "resource": "cobalt", "metric": "mine_production", "year": 2024, "rank": 1 } },
+      "explanation": "DR Congo mined an estimated 226,000 t of cobalt in 2024, about 75% of the world total. Indonesia was a distant second.",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.drc.resource", "category": "cobalt", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "DR Congo mined about three-quarters of the world's supply of which metal in 2024?",
+      "object": "cobalt",
+      "options": ["Cobalt", "Lithium", "Nickel", "Gold"], "correct": ["Cobalt"],
+      "explanation": "Cobalt. Its leading use worldwide is in lithium-ion batteries.",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.lithium.top_producer", "category": "lithium", "type": "RESOURCE_IDENTIFICATION", "difficulty": 2,
+      "text": "Which country mined the most lithium in 2024? Tap it on the map.",
+      "object": "lithium",
+      "fact": { "stat": { "resource": "lithium", "metric": "mine_production", "year": 2024, "rank": 1 } },
+      "explanation": "Australia mined an estimated 82,700 t of lithium in 2024, ahead of Chile (48,900 t) and China (41,400 t).",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.lithium.production_reserves_resources", "category": "lithium", "type": "MATCHING", "difficulty": 3,
+      "text": "Production, reserves and resources are not the same thing. Match each lithium statistic with the country that leads it.",
+      "description": "Mine production: what was dug up in one year. Reserves: what can be mined profitably today. Resources: everything identified in the ground.",
+      "options": { "left": ["Mine production (2024)", "Reserves", "Identified resources"], "right": ["Australia", "Chile", "Argentina", "China"] },
+      "fact": { "pairs": { "stats": [
+        { "label": "Mine production (2024)", "resource": "lithium", "metric": "mine_production", "year": 2024, "rank": 1 },
+        { "label": "Reserves", "resource": "lithium", "metric": "reserves", "year": 2025, "rank": 1 },
+        { "label": "Identified resources", "resource": "lithium", "metric": "identified_resources", "year": 2025, "rank": 1 }
+      ] } },
+      "explanation": "Australia mines the most lithium, Chile has the largest reserves (9.2 million t) and Argentina the largest identified resources (28 million t), according to USGS.",
+      "source": "usgs_mcs_2026", "year": 2025
+    },
+    {
+      "code": "res.lithium.reserves_vs_production", "category": "lithium", "type": "TRUE_FALSE", "difficulty": 3,
+      "text": "True or false: Australia mined the most lithium in 2024, but Chile has the largest lithium reserves.",
+      "object": "lithium",
+      "correct": ["True"],
+      "explanation": "True. Australia led 2024 mine production, while Chile's reserves (9.2 million t) are larger than Australia's (8.4 million t).",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.gold.top_producer", "category": "gold", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which country mined the most gold in 2024?",
+      "object": "gold",
+      "options": ["China", "Australia", "Russia", "South Africa"],
+      "fact": { "stat": { "resource": "gold", "metric": "mine_production", "year": 2024, "rank": 1 } },
+      "explanation": "China mined 377 t of gold in 2024, ahead of Russia (about 310 t) and Australia (284 t).",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.gold.reserves", "category": "gold", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "According to USGS, which country has the largest gold reserves?",
+      "object": "gold",
+      "options": ["Australia", "Russia", "China", "South Africa"],
+      "fact": { "stat": { "resource": "gold", "metric": "reserves", "year": 2025, "rank": 1 } },
+      "explanation": "Australia, with about 13,000 t, just ahead of Russia (12,000 t). China mines the most gold but has smaller reserves.",
+      "source": "usgs_mcs_2026", "year": 2025
+    },
+    {
+      "code": "res.iron_ore.top_producer", "category": "iron_ore", "type": "RESOURCE_IDENTIFICATION", "difficulty": 1,
+      "text": "Which country mined the most iron ore in 2024? Tap it on the map.",
+      "object": "iron_ore",
+      "fact": { "stat": { "resource": "iron_ore", "metric": "mine_production", "year": 2024, "rank": 1 } },
+      "explanation": "Australia produced about 982 million t of usable iron ore in 2024, more than twice as much as Brazil.",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.nickel.top_producer", "category": "other_minerals", "subcategory": "nickel", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which country mined the most nickel in 2024?",
+      "object": "nickel",
+      "options": ["Indonesia", "Philippines", "Russia", "Canada"],
+      "fact": { "stat": { "resource": "nickel", "metric": "mine_production", "year": 2024, "rank": 1 } },
+      "explanation": "Indonesia mined about 2.31 million t of nickel in 2024, more than half of the world total.",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.rare_earths.top_producer", "category": "other_minerals", "subcategory": "rare_earths", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which country mined the most rare earths in 2024?",
+      "object": "rare_earths",
+      "options": ["China", "United States", "Australia", "Myanmar"],
+      "fact": { "stat": { "resource": "rare_earths", "metric": "mine_production", "year": 2024, "rank": 1 } },
+      "explanation": "China, with an estimated 270,000 t of rare-earth oxide in 2024, about 70% of the world total. The United States was second.",
+      "source": "usgs_mcs_2026", "year": 2024
+    },
+    {
+      "code": "res.deposit.kiruna.product", "category": "iron_ore", "type": "RESOURCE_IDENTIFICATION", "answerMode": "options", "difficulty": 2,
+      "text": "What is mined at the marked mine in northern Sweden?",
+      "object": "kiruna_mine",
+      "map": { "focus": { "object": true, "padding": 25 }, "showObject": true },
+      "options": ["Iron ore", "Copper", "Gold", "Diamonds"],
+      "fact": { "object": "kiruna_mine", "links": "produces" },
+      "explanation": "The Kiruna mine in Swedish Lapland is an iron ore mine.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "res.deposit.jwaneng.product", "category": "diamonds", "type": "RESOURCE_IDENTIFICATION", "answerMode": "options", "difficulty": 1,
+      "text": "The marked mine in Botswana is the richest mine of its kind in the world. What does it produce?",
+      "object": "jwaneng_mine",
+      "map": { "focus": { "object": true, "padding": 25 }, "showObject": true },
+      "options": ["Diamonds", "Copper", "Gold", "Iron ore"],
+      "fact": { "object": "jwaneng_mine", "links": "produces" },
+      "explanation": "Jwaneng in Botswana is the richest diamond mine in the world.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "res.deposit.witwatersrand.product", "category": "gold", "type": "RESOURCE_IDENTIFICATION", "answerMode": "options", "difficulty": 2,
+      "text": "So much of one metal has come out of the marked region in South Africa that the country's currency, the rand, is named after it. Which metal?",
+      "object": "witwatersrand",
+      "map": { "focus": { "object": true, "padding": 25 }, "showObject": true },
+      "options": ["Gold", "Copper", "Iron ore", "Diamonds"],
+      "fact": { "object": "witwatersrand", "links": "produces" },
+      "explanation": "Gold. The rand, introduced in 1961, takes its name from the Witwatersrand.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "res.deposit.salar_de_atacama.product", "category": "lithium", "type": "RESOURCE_IDENTIFICATION", "answerMode": "options", "difficulty": 2,
+      "text": "This salt flat in Chile is a major source of which metal, extracted from its brines?",
+      "object": "salar_de_atacama",
+      "map": { "focus": { "object": true, "padding": 25 }, "showObject": true },
+      "options": ["Lithium", "Copper", "Gold", "Nickel"],
+      "fact": { "object": "salar_de_atacama", "links": "produces" },
+      "explanation": "Lithium. Since the 2000s the Salar de Atacama has become a major hub for extracting lithium from its brines.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "res.deposit.ghawar.country", "category": "oil", "type": "RESOURCE_IDENTIFICATION", "difficulty": 2,
+      "text": "Ghawar, the largest conventional oil field in the world, is in which country? Tap it.",
+      "object": "ghawar_field",
+      "map": { "focus": { "area": [5, 25, 45, 70] } },
+      "fact": { "object": "ghawar_field", "countries": "located_in" },
+      "explanation": "Ghawar is in Saudi Arabia's Eastern Province, about 280 km long.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "res.deposit.mir.country", "category": "diamonds", "type": "RESOURCE_IDENTIFICATION", "difficulty": 1,
+      "text": "The Mir mine was the Soviet Union's first developed diamond mine. In which country is it today? Tap it.",
+      "object": "mir_mine",
+      "fact": { "object": "mir_mine", "countries": "located_in" },
+      "explanation": "The Mir mine is in Mirny, in Russia's Sakha Republic in eastern Siberia.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "res.deposit.grasberg.country", "category": "gold", "subcategory": "copper", "type": "RESOURCE_IDENTIFICATION", "difficulty": 2,
+      "text": "The Grasberg mine holds one of the largest gold and copper reserves in the world. Tap the country where it is.",
+      "object": "grasberg_mine",
+      "map": { "focus": { "area": [-15, 90, 15, 150] } },
+      "fact": { "object": "grasberg_mine", "countries": "located_in" },
+      "explanation": "Grasberg is in Indonesia, in the Indonesian part of the island of New Guinea.",
+      "source": "wikidata"
+    },
+    {
+      "code": "res.deposits.countries", "category": "other_minerals", "type": "MATCHING", "difficulty": 2,
+      "text": "Match each mine with its country.",
+      "options": { "left": ["Escondida", "Kiruna mine", "Jwaneng", "Grasberg"], "right": ["Chile", "Sweden", "Botswana", "Indonesia"] },
+      "fact": { "pairs": { "objects": ["escondida_mine", "kiruna_mine", "jwaneng_mine", "grasberg_mine"], "countries": "located_in" } },
+      "explanation": "Escondida (copper) is in Chile's Atacama Desert, Kiruna (iron ore) in Sweden, Jwaneng (diamonds) in Botswana and Grasberg (gold and copper) in Indonesia.",
+      "source": "wikidata"
+    }
+  ]
+}

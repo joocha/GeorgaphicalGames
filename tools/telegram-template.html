@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Atlas Quest</title>
+<title>GeoAIGames · Atlas Quest</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* ===== CONFIG: change after you create your bot ===== */
@@ -98,6 +98,58 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
 .spin{width:36px;height:36px;border-radius:50%;border:3px solid var(--bg2);border-top-color:var(--accent);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.spin{animation-duration:2.4s}}
+
+/* ===== v2: level selection, intro, question engine ===== */
+.home{gap:14px;overflow-y:auto}
+.levels{display:flex;flex-direction:column;gap:10px;padding-bottom:6px}
+.lvl{display:grid;grid-template-columns:48px 1fr auto;gap:4px 12px;align-items:center;background:var(--bg2);border-radius:16px;padding:12px 14px;text-align:left;width:100%}
+.lvl .ico{grid-row:1/4;font-size:30px;width:48px;height:48px;border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.lvl .ttl{font-weight:700;font-size:16px;line-height:1.2}
+.lvl .ttl small{display:block;color:var(--hint);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.lvl .ds{grid-column:2/4;color:var(--hint);font-size:13px;line-height:1.3}
+.lvl .mul{background:var(--accent);color:var(--accent-text);border-radius:999px;padding:2px 9px;font-weight:800;font-size:13px;align-self:start}
+.lvl .meta{grid-column:2/4;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--hint)}
+.lvl .bar{flex:1;height:5px;border-radius:3px;background:var(--bg);overflow:hidden}
+.lvl .bar i{display:block;height:100%;background:var(--good)}
+.lvl .go{background:var(--accent);color:var(--accent-text);border-radius:9px;padding:5px 12px;font-weight:700;font-size:13px}
+.lvl.locked{opacity:.62}
+.lvl.locked .ico{filter:grayscale(1)}
+.lvl.locked .go{background:transparent;color:var(--hint);padding:5px 0}
+.lvl.done .ico{box-shadow:inset 0 0 0 2px var(--good)}
+.intro{gap:14px;overflow-y:auto}
+.intro .head{display:flex;align-items:center;gap:12px}
+.intro .head .ico{font-size:40px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{background:var(--bg2);border-radius:999px;padding:5px 10px;font-size:13px;font-weight:600}
+.chips span.soon{color:var(--hint);font-weight:500}
+.rules{margin:0;padding-left:18px;color:var(--hint);font-size:14px;display:flex;flex-direction:column;gap:4px}
+.toast{position:fixed;left:16px;right:16px;bottom:max(18px,env(safe-area-inset-bottom));background:var(--text);color:var(--bg);border-radius:12px;padding:12px 14px;font-size:14px;font-weight:600;text-align:center;z-index:9;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:.94}
+.map.pz svg{touch-action:none}
+.map path.c.sel{fill:color-mix(in srgb,var(--accent) 55%,var(--land))}
+.map path.c.miss{fill:color-mix(in srgb,var(--good) 45%,var(--land))}
+.map .L path{pointer-events:none}
+.map .L-rivers path{fill:none;stroke:#5aa9e0;stroke-width:1;vector-effect:non-scaling-stroke;opacity:.85}
+.map .L-lakes path{fill:#9ccff0;stroke:#5aa9e0;stroke-width:.5;vector-effect:non-scaling-stroke}
+.map .L path.fx{stroke:var(--hl);stroke-width:3.5;opacity:1}
+.map .L-lakes path.fx{fill:var(--hl)}
+.map .L path.fx.good{stroke:var(--good)}
+.map .L-lakes path.fx.good{fill:var(--good)}
+.map circle.mk{fill:var(--hl);stroke:var(--bg);pointer-events:none}
+.map circle.mk.good{fill:var(--good)}
+.mapbtns{position:absolute;right:8px;top:8px;display:flex;gap:6px;z-index:2}
+.mapbtns button{background:color-mix(in srgb,var(--bg) 88%,transparent);border-radius:9px;padding:5px 9px;font-size:12px;font-weight:700;color:var(--hint);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.mapbtns button.on{color:var(--accent)}
+.opts.multi .opt.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,var(--bg2))}
+.pairs{display:flex;flex-direction:column;gap:6px}
+.pairs label{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;font-weight:600;font-size:14px}
+.pairs select{font:inherit;font-size:14px;padding:9px;border-radius:10px;border:2px solid transparent;background:var(--bg2);color:var(--text);width:100%}
+.pairs select.right{border-color:var(--good)}.pairs select.wrong{border-color:var(--bad)}
+.picked{color:var(--hint);font-size:13px}
+.expl{margin:0;font-size:14px;line-height:1.4}
+.src{color:var(--hint);font-size:11px;margin:0}
+.bottom{max-height:62%;overflow-y:auto}
+.unlocked{background:color-mix(in srgb,var(--good) 16%,var(--bg2));border-radius:12px;padding:10px;font-weight:700}
 </style>
 </head>
 <body>
@@ -110,11 +162,22 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
   <button class="cta" id="authBtn" hidden></button>
 </section>
 
-<!-- START -->
-<section class="screen start pad" id="sStart" hidden>
+<!-- HOME: level selection (v2) -->
+<section class="screen home pad" id="sHome" hidden>
   <div>
     <div class="hello" id="hello">Hi, explorer!</div>
-    <h1>Atlas Quest</h1>
+    <h1>GeoAIGames</h1>
+    <p class="sub">Five levels of geography. Finish a level to unlock the next one.</p>
+  </div>
+  <div class="levels" id="levels"></div>
+  <div class="sync" id="syncStart"></div>
+</section>
+
+<!-- LEVEL 1 INTRO: the original Atlas Quest start screen -->
+<section class="screen start pad" id="sStart" hidden>
+  <div>
+    <div class="hint" id="l1Label">Level 1 · ×1 points</div>
+    <h1>Atlas Explorer</h1>
     <p class="sub">Find countries on the map and name them by their shape. 10 rounds.</p>
   </div>
   <div class="map" id="startMap"></div>
@@ -125,9 +188,11 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
     </div>
     <div class="best"><span>Best score</span><span id="bestTxt">—</span></div>
     <button class="cta" id="play">Play</button>
-    <div class="sync" id="syncStart"></div>
   </div>
 </section>
+
+<!-- LEVEL 2-5 INTRO -->
+<section class="screen intro pad" id="sIntro" hidden></section>
 
 <!-- GAME -->
 <section class="screen" id="sGame" hidden>
@@ -138,6 +203,8 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
 
 <!-- RESULT -->
 <section class="screen result pad" id="sResult" hidden></section>
+
+<div class="toast" id="toast" role="status"></div>
 
 <script>
 /* ===== CONFIG ===== */
@@ -222,7 +289,7 @@ function gate(state){
     else{msg="Can't reach the game server. Check your connection and try again.";btn="retry"}}
   $("authSpin").hidden=!busy;$("authTitle").textContent=title;$("authMsg").textContent=msg;
   const b=$("authBtn");b.hidden=!btn;b.textContent=btn==="close"?"Close":"Try again";
-  b.onclick=()=>{haptic("tap");if(btn==="close")tg.close();else authenticate().then(ok=>ok&&goStart())};
+  b.onclick=()=>{haptic("tap");if(btn==="close")tg.close();else authenticate().then(ok=>ok&&goHome())};
   if(!busy)haptic(state==="expired"?"warning":"error");
   clearInterval(spotT);show("sAuth");
 }
@@ -256,15 +323,38 @@ function nearest(n,k){const c=byName[n];return ALL.filter(x=>x!==n).map(x=>[x,Ma
 
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 let PATHS="";MAP.forEach(c=>PATHS+=`<path class="c" data-n="${esc(c.name)}" d="${c.d}" vector-effect="non-scaling-stroke"/>`);
+// Map component. Level 1 uses it exactly as before (fit, paint, label).
+// v2 adds: pan/zoom (setInteractive), lazy-loaded line/area layers
+// (layers/<name>.json, no names inside), highlighted layer features and
+// point markers, all in the same equirectangular map coordinates.
+const LAYER_BASE="layers/",layerCache={};
+function loadLayer(name){return layerCache[name]||(layerCache[name]=fetch(LAYER_BASE+name+".json").then(r=>{if(!r.ok)throw new Error("layer "+name);return r.json()}).catch(e=>{delete layerCache[name];throw e}))}
 function makeMap(host,onTap){
   const NS="http://www.w3.org/2000/svg",svg=document.createElementNS(NS,"svg");
   svg.setAttribute("preserveAspectRatio","xMidYMid meet");
-  svg.innerHTML=`<rect class="sea" x="-3000" y="-2000" width="7000" height="5000"/><g>${PATHS}</g><g class="over"></g>`;
+  svg.innerHTML=`<rect class="sea" x="-3000" y="-2000" width="7000" height="5000"/><g>${PATHS}</g><g class="layers"></g><g class="over"></g>`;
   host.appendChild(svg);
   const els={};svg.querySelectorAll("path.c").forEach(p=>els[p.dataset.n]=p);
-  const over=svg.querySelector(".over");let vb=[0,0,1000,500],anim,labels=[];
-  const apply=()=>{svg.setAttribute("viewBox",vb.join(" "));labels.forEach(t=>{t.setAttribute("font-size",vb[2]*.045);t.setAttribute("stroke-width",vb[2]*.012)})};
+  const over=svg.querySelector(".over"),layersG=svg.querySelector(".layers");let vb=[0,0,1000,500],anim,labels=[],marks=[];
+  const apply=()=>{svg.setAttribute("viewBox",vb.join(" "));labels.forEach(t=>{t.setAttribute("font-size",vb[2]*.045);t.setAttribute("stroke-width",vb[2]*.012);if(t._dy)t.setAttribute("y",t._y+vb[2]*t._dy)});marks.forEach(m=>{m.setAttribute("r",vb[2]*.014);m.setAttribute("stroke-width",vb[2]*.004)})};
+  // Pan & zoom (only while interactive). A drag never counts as a tap.
+  let interactive=false,suppress=false;const pts=new Map();let g0=null;
+  const scale=()=>{const r=svg.getBoundingClientRect();return Math.min(r.width/vb[2],r.height/vb[3])||1};
+  const toMap=(cx,cy)=>{const r=svg.getBoundingClientRect(),s=scale();return[vb[0]+(cx-r.left-(r.width-vb[2]*s)/2)/s,vb[1]+(cy-r.top-(r.height-vb[3]*s)/2)/s]};
+  const zoomAt=(mx,my,f)=>{const w=Math.min(1400,Math.max(18,vb[2]*f)),k=w/vb[2];vb=[mx-(mx-vb[0])*k,my-(my-vb[1])*k,w,vb[3]*k];apply()};
+  svg.addEventListener("pointerdown",e=>{if(!interactive)return;cancelAnimationFrame(anim);pts.set(e.pointerId,[e.clientX,e.clientY]);
+    const p=[...pts.values()];g0={vb:vb.slice(),p,moved:false,s:scale(),d:p.length>1?Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]):0,
+      mid:p.length>1?toMap((p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2):null}});
+  addEventListener("pointermove",e=>{if(!interactive||!pts.has(e.pointerId)||!g0)return;pts.set(e.pointerId,[e.clientX,e.clientY]);const p=[...pts.values()];
+    if(p.length===1&&g0.p.length===1){const dx=p[0][0]-g0.p[0][0],dy=p[0][1]-g0.p[0][1];if(Math.hypot(dx,dy)>6)g0.moved=true;if(g0.moved){vb=[g0.vb[0]-dx/g0.s,g0.vb[1]-dy/g0.s,g0.vb[2],g0.vb[3]];apply()}}
+    else if(p.length>1&&g0.d){g0.moved=true;const d=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);vb=g0.vb.slice();zoomAt(g0.mid[0],g0.mid[1],g0.d/d)}});
+  const up=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);if(g0&&g0.moved){suppress=true;setTimeout(()=>suppress=false,60)}
+    if(pts.size){const p=[...pts.values()];g0={vb:vb.slice(),p,moved:true,s:scale(),d:0}}else g0=null};
+  addEventListener("pointerup",up);addEventListener("pointercancel",up);
+  svg.addEventListener("wheel",e=>{if(!interactive)return;e.preventDefault();const[mx,my]=toMap(e.clientX,e.clientY);zoomAt(mx,my,e.deltaY>0?1.18:1/1.18)},{passive:false});
+  svg.addEventListener("click",e=>{if(suppress){e.stopPropagation();e.preventDefault()}},true);
   if(onTap)svg.addEventListener("click",e=>{const p=e.target.closest&&e.target.closest("path.c");if(p)onTap(p.dataset.n)});
+  const layerState={},layerEls={};
   const api={
     view(b,instant){ // fit box to the element's own aspect ratio
       const r=host.getBoundingClientRect(),ar=r.width&&r.height?r.width/r.height:1.6;
@@ -277,9 +367,22 @@ function makeMap(host,onTap){
     fit(names,pad=1.25,minW=120){let b=[1e9,1e9,-1e9,-1e9];names.forEach(n=>{const c=byName[n].b;b=[Math.min(b[0],c[0]),Math.min(b[1],c[1]),Math.max(b[2],c[2]),Math.max(b[3],c[3])]});
       const w=Math.max((b[2]-b[0])*pad,minW),h=Math.max((b[3]-b[1])*pad,minW/2),cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2;api.view([cx-w/2,cy-h/2,cx+w/2,cy+h/2])},
     world(i){api.view([0,20,1000,420],i)},
-    clear(){Object.values(els).forEach(p=>p.setAttribute("class","c"));over.innerHTML="";labels=[]},
+    clear(){Object.values(els).forEach(p=>p.setAttribute("class","c"));over.innerHTML="";labels=[];marks=[];
+      layersG.querySelectorAll("path.fx").forEach(p=>p.setAttribute("class",""));Object.keys(layerState).forEach(n=>api.showLayer(n,layerState[n].user))},
     paint(ns,cls){ns.forEach(n=>{const p=els[n];if(p){p.classList.add(cls);p.parentNode.appendChild(p)}})},
-    label(n){const c=byName[n];const t=document.createElementNS(NS,"text");t.textContent=n;t.setAttribute("x",c.cx);t.setAttribute("y",c.cy);t.setAttribute("text-anchor","middle");t.setAttribute("dominant-baseline","middle");over.appendChild(t);labels.push(t);apply()}
+    unpaint(n,cls){const p=els[n];if(p)p.classList.remove(cls)},
+    label(n){const c=byName[n];if(c)api.labelAt(c.cx,c.cy,n)},
+    labelAt(x,y,text,dy){const t=document.createElementNS(NS,"text");t.textContent=text;t.setAttribute("x",x);t.setAttribute("y",y);t._y=y;t._dy=dy||0;t.setAttribute("text-anchor","middle");t.setAttribute("dominant-baseline","middle");over.appendChild(t);labels.push(t);apply()},
+    marker(x,y,cls){const c=document.createElementNS(NS,"circle");c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("class","mk"+(cls?" "+cls:""));over.appendChild(c);marks.push(c);apply()},
+    setInteractive(on){interactive=on;host.classList.toggle("pz",on)},
+    // Shows or hides a layer; `user` remembers the player's own toggle.
+    async showLayer(name,on,{user}={}){const st=layerState[name]||(layerState[name]={user:false});if(user!==undefined)st.user=user;
+      if(on&&!layerEls[name]){const data=await loadLayer(name);if(!layerEls[name]){const g=document.createElementNS(NS,"g");g.setAttribute("class","L L-"+name);
+        g.innerHTML=data.map(f=>`<path data-i="${f.i}" d="${f.d}"/>`).join("");layersG.appendChild(g);layerEls[name]=g}}
+      if(layerEls[name])layerEls[name].style.display=on?"":"none"},
+    layerOn(name){return!!(layerState[name]&&layerState[name].user)},
+    async feature(layer,id,cls){await api.showLayer(layer,true);const p=layerEls[layer]&&layerEls[layer].querySelector(`path[data-i="${id}"]`);
+      if(p){p.setAttribute("class","fx"+(cls?" "+cls:""));p.parentNode.appendChild(p)}}
   };
   return api;
 }
@@ -301,22 +404,24 @@ function signedIn(d){mergeBests(d.bests);const n=d.player.profile&&d.player.prof
 $("level").onclick=e=>{const b=e.target.closest("button");if(!b)return;level=b.dataset.l;haptic("tap");
   $("level").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));showBest()};
 function spotlight(){const n=EASY[rnd(EASY.length)];startMap.clear();startMap.paint([n],"hl");startMap.fit([n,...nearest(n,6)],1.3,220);startMap.label(n)}
-function show(id){["sAuth","sStart","sGame","sResult"].forEach(s=>$(s).hidden=s!==id);
-  if(inTG){try{id==="sGame"?tg.BackButton.show():tg.BackButton.hide()}catch(e){}}}
-if(inTG){try{tg.BackButton.onClick(()=>{haptic("tap");leaveGame();goStart()})}catch(e){}}
+function show(id){["sAuth","sHome","sStart","sIntro","sGame","sResult"].forEach(s=>$(s).hidden=s!==id);
+  if(id!=="sStart")clearInterval(spotT);
+  if(inTG){try{id==="sHome"||id==="sAuth"?tg.BackButton.hide():tg.BackButton.show()}catch(e){}}}
+if(inTG){try{tg.BackButton.onClick(()=>{haptic("tap");leaveGame();leaveEngine();goHome()})}catch(e){}}
+// Level 1 introduction: the original Atlas Quest start screen.
 function goStart(){
   if(mustSignIn&&auth.state!=="authenticated"){gate(auth.state==="expired"?"expired":"failed");return}
-  show("sStart");spotlight();clearInterval(spotT);spotT=setInterval(spotlight,2500);showBest();showSync()}
+  show("sStart");spotlight();clearInterval(spotT);spotT=setInterval(spotlight,2500);showBest()}
 $("play").onclick=()=>{haptic("tap");startGame()};
 
 /* ===== GAME ===== */
-const gameMap=makeMap($("gameMap"),n=>tapCountry(n));
+const gameMap=makeMap($("gameMap"),n=>EG?engineTap(n):tapCountry(n));
 let G;
 let starting=false;
 async function startGame(){
   if(starting)return;
   if(mustSignIn){starting=true;const ok=await ensureSession().finally(()=>{starting=false});if(!ok)return}
-  clearInterval(spotT);
+  clearInterval(spotT);EG=null;resetGameMap();
   const pool=shuffle(level==="easy"?EASY:ALL).slice(0,ROUNDS);
   G={qs:pool.map((n,i)=>({n,type:i%2?"name":"find"})),i:0,score:0,correct:0,streak:0,bestStreak:0,res:[],done:false};
   // Open a game session on the server without blocking play.
@@ -405,14 +510,197 @@ function finish(){
     if(d&&d.best&&d.best.value!=null&&(best[lvl]==null||d.best.value>best[lvl])){best[lvl]=d.best.value;store.set("best_"+lvl,d.best.value)}
     if(!el)return;
     el.textContent=d?"☁️ Saved to your profile":mustSignIn&&auth.state==="expired"?"Session expired · this game wasn't saved to your profile":online()?"Couldn't save this game to your profile":"";
-    el.classList.toggle("ok",!!d)});
+    el.classList.toggle("ok",!!d);
+    if(d)afterResult(d,el)});
   $("again").onclick=()=>{haptic("tap");startGame()};
-  $("menu").onclick=()=>{haptic("tap");goStart()};
+  $("menu").onclick=()=>{haptic("tap");goHome()};
   $("share").onclick=()=>{
     const text=`I found ${G.correct}/${ROUNDS} countries (${G.score} pts) in Atlas Quest. Can you beat me?`;
     const url=`https://t.me/share/url?url=${encodeURIComponent(GAME_LINK)}&text=${encodeURIComponent(text)}`;
     if(inTG)tg.openTelegramLink(url);else window.open(url,"_blank");
   };
+}
+
+/* ===== LEVELS (v2) =====
+   Level definitions, unlock state, bests and progress come from the API
+   (GET /api/levels): the frontend never decides what is unlocked or how
+   many points an answer is worth. FALLBACK_LEVELS is only for display when
+   there is no API (a plain browser); then only Level 1 can be played. */
+const FALLBACK_LEVELS=[
+  {number:1,code:"atlas",name:"Atlas Explorer",icon:"🗺️",multiplier:1,shortDescription:"Find countries on the map and name them by their shape.",unlocked:true,engine:"client"},
+  {number:2,code:"hydro",name:"Hydro Explorer",icon:"💧",multiplier:2,shortDescription:"Rivers, lakes, waterfalls, seas, straits and canals."},
+  {number:3,code:"earth",name:"Earth Explorer",icon:"⛰️",multiplier:3,shortDescription:"Mountain ranges, peaks, passes, volcanoes and canyons."},
+  {number:4,code:"resources",name:"Resource Explorer",icon:"⛏️",multiplier:4,shortDescription:"Gold, copper, lithium, cobalt and the countries that mine them."},
+  {number:5,code:"master",name:"Master Explorer",icon:"🧭",multiplier:5,shortDescription:"Mixed challenges that combine everything you have learned."}];
+let LEVELS=null;
+async function loadLevels(){if(!online())return null;
+  try{const d=await api("GET","/levels");LEVELS=d.levels;return LEVELS}catch(e){console.warn("levels:",e.message);return null}}
+const levelList=()=>LEVELS||FALLBACK_LEVELS;
+const fmt=n=>n==null?"—":Number(n).toLocaleString("en-US");
+let toastT;function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),2600)}
+
+function goHome(){
+  if(mustSignIn&&auth.state!=="authenticated"){gate(auth.state==="expired"?"expired":"failed");return}
+  const list=levelList();
+  $("levels").innerHTML=list.map(l=>{
+    const locked=!l.unlocked;
+    // Level 1 also has bests saved on this device (offline play).
+    const bestV=l.number===1?[l.best,best.easy,best.hard].filter(v=>v!=null).reduce((a,b)=>Math.max(a,b),null):l.best;
+    const p=l.progress,m=p&&p.mastery;
+    const pct=m?Math.round(m.mastered/m.total*100):p?Math.min(100,Math.round(p.completedSessions/p.requiredSessions*100)):0;
+    const progTxt=m?`${m.mastered}/${m.total} mastered`:l.completed?"Completed":"Not completed";
+    const hint=locked?(LEVELS?l.unlockHint:"Open GeoAIGames in Telegram to unlock"):null;
+    return `<button class="lvl${locked?" locked":""}${l.completed?" done":""}" data-code="${esc(l.code)}" aria-label="Level ${l.number}, ${esc(l.name)}${locked?", locked":""}">
+      <span class="ico">${l.icon}</span>
+      <span class="ttl"><small>Level ${l.number}</small>${esc(l.name)}</span>
+      <span class="mul">×${l.multiplier}</span>
+      <span class="ds">${esc(locked?hint:l.shortDescription)}</span>
+      <span class="meta">${locked?"🔒 Locked":`<span>Best ${fmt(bestV)}</span><span class="bar"><i style="width:${pct}%"></i></span><span>${esc(progTxt)}</span>`}
+        <span class="go">${locked?"":"Play"}</span></span>
+    </button>`}).join("");
+  show("sHome");showSync();
+}
+$("levels").onclick=e=>{const b=e.target.closest(".lvl");if(!b)return;const l=levelList().find(x=>x.code===b.dataset.code);
+  if(!l.unlocked){haptic("warning");toast(LEVELS?l.unlockHint:"Open GeoAIGames in Telegram to play this level");return}
+  haptic("tap");if(l.number===1){$("l1Label").textContent=`Level 1 · ×${l.multiplier} points`;goStart()}else openIntro(l)};
+
+function openIntro(l){
+  const cats=(l.categories||[]).map(c=>`<span class="${c.questions?"":"soon"}">${esc(c.name)}${c.questions?"":" · soon"}</span>`).join("");
+  $("sIntro").innerHTML=`
+    <div class="head"><span class="ico">${l.icon}</span><div><div class="hint">Level ${l.number} · ×${l.multiplier} points</div><h1 style="margin:0">${esc(l.name)}</h1></div></div>
+    <p class="sub" style="color:var(--text)">${esc(l.description||l.shortDescription)}</p>
+    <div class="kind">Categories</div><div class="chips">${cats}</div>
+    <div class="kind">Rules</div>
+    <ul class="rules"><li>${l.rounds||10} rounds. Some are answered on the map, some with options.</li>
+      <li>100 points per correct answer, plus a streak bonus of up to 50.</li>
+      <li>Questions with several answers give partial points.</li>
+      <li>Every point is multiplied by ×${l.multiplier} on this level.</li></ul>
+    <div class="best"><span>Best score</span><span>${l.best==null?"Not played yet":fmt(l.best)+" points"}</span></div>
+    <button class="cta" id="introPlay">Start game</button>`;
+  $("introPlay").onclick=()=>{haptic("tap");startEngine(l)};
+  show("sIntro");
+}
+
+// After any recorded result: refresh levels and celebrate new unlocks.
+function afterResult(d,el){
+  loadLevels();
+  if(d.unlocked&&d.unlocked.length&&el){const u=d.unlocked[0];
+    const at=$("again")||el;at.insertAdjacentHTML("beforebegin",`<div class="unlocked">🔓 Level ${u.number} · ${esc(u.name)} unlocked!</div>`);haptic("success")}}
+
+/* ===== QUESTION ENGINE GAME (Levels 2-5) =====
+   The server picks the questions, checks every answer and computes every
+   point (POST /sessions/:id/answers). The client only displays. */
+let EG=null;
+function resetGameMap(){gameMap.setInteractive(false);gameMap.clear();["rivers","lakes"].forEach(n=>gameMap.showLayer(n,false,{user:false}).catch(()=>{}));
+  const b=$("gameMap").querySelector(".mapbtns");if(b)b.remove()}
+function leaveEngine(){if(!EG||EG.done)return;EG.done=true;api("POST",`/sessions/${EG.sid}/abandon`).catch(()=>{})}
+async function startEngine(l){
+  if(starting)return;starting=true;
+  try{
+    if(!(await ensureSession()))return;
+    const d=await api("POST","/sessions",{level:l.code,clientPlatform:inTG?"telegram":"web"});
+    EG={level:l,sid:d.session.id,mult:d.session.scoring.multiplier,qs:d.questions,i:0,score:0,streak:0,res:[],done:false};
+    G=null;show("sGame");resetGameMap();gameMap.setInteractive(true);mapButtons();requestAnimationFrame(renderEQ);
+  }catch(e){toast(e.code==="level_locked"?e.message:"Couldn't start the game. Please try again.");haptic("error")}
+  finally{starting=false}
+}
+function mapButtons(){const host=$("gameMap");const w=document.createElement("div");w.className="mapbtns";
+  w.innerHTML=`<button data-l="rivers">Rivers</button><button data-l="lakes">Lakes</button><button data-fit>⤢</button>`;
+  w.onclick=async e=>{const b=e.target.closest("button");if(!b)return;haptic("tap");
+    if(b.dataset.fit!==undefined){focusQ(EG.qs[EG.i]);return}
+    const n=b.dataset.l,on=!gameMap.layerOn(n);b.classList.toggle("on",on);
+    try{await gameMap.showLayer(n,on,{user:on})}catch(err){b.classList.remove("on");toast("Couldn't load the map layer")}};
+  host.appendChild(w)}
+function engineHeader(){
+  $("dots").innerHTML=EG.qs.map((_,i)=>`<i class="${EG.res[i]===true?"ok":EG.res[i]===false?"no":i===EG.i?"now":""}"></i>`).join("");
+  $("pts").textContent=fmt(EG.score);$("streak").hidden=EG.streak<2;$("streak").textContent=`🔥 ${EG.streak}`}
+function focusQ(q){const f=q.map&&q.map.focus;
+  if(f&&f.bbox)gameMap.view(f.bbox);else if(f&&f.countries)gameMap.fit(f.countries,1.2,120);else gameMap.world()}
+const TYPE_LABEL={SINGLE_CHOICE:"Choose one",MULTIPLE_CHOICE:"Choose all that apply",MAP_IDENTIFICATION:"Find it on the map",COUNTRY_IDENTIFICATION:"Name the country",
+  OBJECT_IDENTIFICATION:"What is it?",MATCHING:"Match the pairs",TRUE_FALSE:"True or false",GEO_RELATIONSHIP:"Select on the map",RESOURCE_IDENTIFICATION:"Resources"};
+async function renderEQ(){
+  const q=EG.qs[EG.i];EG.locked=false;EG.sel=new Set();engineHeader();gameMap.clear();focusQ(q);
+  const m=q.map||{};
+  for(const n of m.layers||[])gameMap.showLayer(n,true).catch(()=>{});
+  if(m.highlightCountries&&m.highlightCountries.length)gameMap.paint(m.highlightCountries,"hl");
+  if(m.object){if(m.object.kind==="point")gameMap.marker(m.object.x,m.object.y);else gameMap.feature(m.object.layer,m.object.featureId).catch(()=>{})}
+  $("gameMap").classList.toggle("tap",q.answerMode.startsWith("map_"));
+  let body="";
+  if(q.answerMode==="options")body=`<div class="opts${q.multi?" multi":""}">${q.options.map(o=>`<button class="opt" data-o="${esc(o.id)}">${esc(o.label)}</button>`).join("")}</div>`
+    +(q.multi?`<button class="cta" id="check" disabled>Check</button>`:"");
+  else if(q.answerMode==="map_multi")body=`<p class="picked" id="picked">Tap countries to select them.</p><button class="cta" id="check" disabled>Check</button>`;
+  else if(q.answerMode==="map_single")body=`<p class="hint">Tap a country. Drag to move, pinch to zoom.</p>`;
+  else if(q.answerMode==="pairs")body=`<div class="pairs">${q.options.left.map(l=>`<label><span>${esc(l.label)}</span><select data-l="${esc(l.id)}"><option value="">Choose…</option>${q.options.right.map(r=>`<option value="${esc(r.id)}">${esc(r.label)}</option>`).join("")}</select></label>`).join("")}</div><button class="cta" id="check" disabled>Check</button>`;
+  $("bottom").innerHTML=`<div class="kind">Round ${EG.i+1} · ${esc(TYPE_LABEL[q.type]||"")}${q.dataYear?` · ${q.dataYear} data`:""}</div>
+    <div class="prompt">${esc(q.text)}</div>${q.description?`<p class="hint">${esc(q.description)}</p>`:""}${body}`;
+  const check=$("check");
+  if(q.answerMode==="options"){$("bottom").querySelectorAll(".opt").forEach(b=>b.onclick=()=>{if(EG.locked)return;haptic("tap");
+    if(!q.multi)return submitEQ({optionIds:[b.dataset.o]});
+    b.classList.toggle("sel");EG.sel.has(b.dataset.o)?EG.sel.delete(b.dataset.o):EG.sel.add(b.dataset.o);check.disabled=!EG.sel.size})}
+  if(q.answerMode==="pairs"){const sels=[...$("bottom").querySelectorAll("select")];sels.forEach(s=>s.onchange=()=>{check.disabled=sels.some(x=>!x.value)})}
+  if(check)check.onclick=()=>{if(EG.locked)return;haptic("tap");
+    if(q.answerMode==="options")submitEQ({optionIds:[...EG.sel]});
+    else if(q.answerMode==="map_multi")submitEQ({countries:[...EG.sel]});
+    else submitEQ({pairs:[...$("bottom").querySelectorAll("select")].map(s=>({left:s.dataset.l,right:s.value}))})};
+}
+function engineTap(n){
+  const q=EG&&EG.qs[EG.i];if(!q||EG.locked||$("sGame").hidden)return;
+  if(q.answerMode==="map_single"){haptic("tap");return submitEQ({countries:[n]})}
+  if(q.answerMode!=="map_multi")return;haptic("tap");
+  if(EG.sel.has(n)){EG.sel.delete(n);gameMap.unpaint(n,"sel")}else{EG.sel.add(n);gameMap.paint([n],"sel")}
+  $("picked").textContent=EG.sel.size?`Selected: ${[...EG.sel].join(", ")}`:"Tap countries to select them.";$("check").disabled=!EG.sel.size}
+async function submitEQ(answer){
+  const q=EG.qs[EG.i];EG.locked=true;let r;
+  try{r=await api("POST",`/sessions/${EG.sid}/answers`,{round:q.round,answer})}
+  catch(e){EG.locked=false;toast(e.status===409?"This round was already answered.":"Couldn't send your answer. Try again.");haptic("error");return}
+  EG.score=r.score;EG.streak=r.streak;EG.res[EG.i]=r.isCorrect;engineHeader();haptic(r.isCorrect?"success":r.fraction>0?"warning":"error");
+  $("gameMap").classList.remove("tap");
+  // Reveal on the map: correct countries green, wrong picks red, the object highlighted and named.
+  if(r.correct.countries){const want=new Set(r.correct.countries),picked=answer.countries||[];
+    picked.forEach(n=>{gameMap.unpaint(n,"sel");if(!want.has(n)){gameMap.paint([n],"bad");gameMap.label(n)}});
+    r.correct.countries.forEach(n=>{gameMap.paint([n],picked.includes(n)?"good":"miss");gameMap.label(n)});
+    if(!(q.map&&q.map.focus))gameMap.fit([...want,...picked].filter(n=>byName[n]),1.4,140)}
+  if(r.object&&r.object.shape){const sh=r.object.shape;
+    if(sh.kind==="point"){gameMap.marker(sh.x,sh.y,"good");gameMap.labelAt(sh.x,sh.y,r.object.name,-.08)}
+    else gameMap.feature(sh.layer,sh.featureId,"good").catch(()=>{})}
+  if(r.correct.optionIds){const ok=new Set(r.correct.optionIds);$("bottom").querySelectorAll(".opt").forEach(b=>{b.disabled=true;b.classList.remove("sel");
+    if(ok.has(b.dataset.o))b.classList.add("right");else if(answer.optionIds.includes(b.dataset.o))b.classList.add("wrong")})}
+  if(r.correct.pairs){const want=new Map(r.correct.pairs.map(p=>[p.left,p.right]));$("bottom").querySelectorAll("select").forEach(s=>{s.disabled=true;
+    const ok=want.get(s.dataset.l)===s.value;s.classList.add(ok?"right":"wrong");if(!ok)s.value=want.get(s.dataset.l)})}
+  const c=$("check");if(c)c.remove();const pk=$("picked");if(pk)pk.remove();
+  const msg=r.isCorrect?`Correct! +${fmt(r.points)}`:r.fraction>0?`Partly right · +${fmt(r.points)}`:"Not this time.";
+  const last=EG.i===EG.qs.length-1;
+  const extra=r.offMapAnswers&&r.offMapAnswers.length?` (Also: ${r.offMapAnswers.join(", ")}, too small for this map.)`:"";
+  $("bottom").insertAdjacentHTML("beforeend",`<p class="expl">${esc(r.explanation)}${esc(extra)}</p>
+    ${r.source?`<p class="src">Source: ${esc(r.source.name)}${r.source.year?`, ${r.source.year} data`:""}</p>`:""}
+    <div class="fb"><p class="${r.isCorrect?"ok":"no"}">${esc(msg)}${r.multiplier>1&&r.points?` <small>(×${r.multiplier})</small>`:""}</p><button class="cta" id="next">${last?"Results":"Next"}</button></div>`);
+  $("next").onclick=()=>{haptic("tap");EG.i++;EG.i>=EG.qs.length?finishEngine():renderEQ()};
+}
+async function finishEngine(){
+  EG.done=true;const eg=EG;
+  $("sResult").innerHTML=`<div class="spin" style="margin:0 auto"></div><div class="hint">Saving your result…</div>`;show("sResult");
+  let d;try{d=await api("POST",`/sessions/${eg.sid}/complete`,{})}catch(e){
+    $("sResult").innerHTML=`<h2>Couldn't save this game</h2><p class="hint">${esc(e.message)}</p><button class="cta" id="retry">Try again</button><button class="ghost" id="menu">Menu</button>`;
+    $("retry").onclick=()=>{eg.done=false;EG=eg;finishEngine()};$("menu").onclick=()=>{EG=null;goHome()};return}
+  const r=d.result,l=eg.level;
+  const msg=r.correctCount>=9?"Master explorer!":r.correctCount>=7?"Great expedition!":r.correctCount>=5?"Good trip!":"Keep exploring!";
+  $("sResult").innerHTML=`
+    <div class="hint">Level ${l.number} · ${esc(l.name)}</div>
+    <div class="big">${r.correctCount}<small> / ${r.totalRounds}</small></div>
+    <div style="font-size:20px;font-weight:700">${msg}</div>
+    ${d.best.isNew?`<div class="newbest">New best score!</div>`:""}
+    <div class="row"><div><b>${fmt(r.score)}</b><span>points (×${r.scoreMultiplier})</span></div><div><b>${r.bestStreak}</b><span>best streak</span></div><div><b>${fmt(d.best.value)}</b><span>best ever</span></div></div>
+    <div class="sync ok" id="syncResult">☁️ Saved to your profile</div>
+    <button class="cta" id="again">Play again</button>
+    <button class="ghost" id="share">Challenge a friend</button>
+    <button class="ghost" id="menu">Menu</button>`;
+  afterResult(d,$("syncResult"));
+  EG=null;resetGameMap();
+  $("again").onclick=()=>{haptic("tap");startEngine(l)};
+  $("menu").onclick=()=>{haptic("tap");goHome()};
+  $("share").onclick=()=>{const text=`I scored ${r.score} points in ${l.name} on GeoAIGames. Can you beat me?`;
+    const url=`https://t.me/share/url?url=${encodeURIComponent(GAME_LINK)}&text=${encodeURIComponent(text)}`;
+    if(inTG)tg.openTelegramLink(url);else window.open(url,"_blank")};
 }
 
 /* ===== BOOT =====
@@ -421,11 +709,11 @@ function finish(){
 const bestsP=Promise.all([store.get("best_easy"),store.get("best_hard")]).then(([e,h])=>{best.easy=e?+e:null;best.hard=h?+h:null});
 if(mustSignIn){
   gate("initializing");
-  Promise.all([bestsP,authenticate()]).then(([,ok])=>{if(ok)goStart()});
+  Promise.all([bestsP,authenticate()]).then(([,ok])=>{if(ok)loadLevels().finally(goHome)});
 }else{
   const loginDone=login();
-  bestsP.then(()=>{goStart();
-    loginDone.then(d=>{if(d)signedIn(d);if(!$("sStart").hidden){showBest();showSync()}})});
+  bestsP.then(()=>{goHome();
+    loginDone.then(async d=>{if(d){signedIn(d);await loadLevels()}if(!$("sHome").hidden)goHome();if(!$("sStart").hidden)showBest()})});
 }
 
 </script>

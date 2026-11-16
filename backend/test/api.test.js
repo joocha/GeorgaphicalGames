@@ -204,11 +204,19 @@ test('a played game is recorded with result, best and outbox event', async () =>
   const again = await call('POST', `/sessions/${sid}/complete`, { token, body: { score: 310, correctCount: 3 } });
   assert.equal(again.status, 409);
 
-  const event = await db.query(`SELECT event_type, status, payload FROM outbox_events`);
+  const event = await db.query(`SELECT event_type, status, payload FROM outbox_events WHERE event_type = 'game_result.recorded'`);
   assert.equal(event.rows.length, 1);
   assert.equal(event.rows[0].event_type, 'game_result.recorded');
   assert.equal(event.rows[0].payload.mode, 'easy');
   assert.equal(event.rows[0].payload.score, 310);
+  // v2.0.0: Atlas Quest is Level 1 (1x); finishing it unlocks Level 2.
+  assert.equal(event.rows[0].payload.level, 'atlas');
+  assert.equal(event.rows[0].payload.scoreMultiplier, 1);
+  assert.equal(event.rows[0].payload.baseScore, 310);
+  assert.deepEqual(done.body.unlocked, [{ code: 'hydro', number: 2, name: 'Hydro Explorer' }]);
+  const unlocked = await db.query(`SELECT payload FROM outbox_events WHERE event_type = 'level.unlocked'`);
+  assert.equal(unlocked.rows.length, 1);
+  assert.equal(unlocked.rows[0].payload.level, 'hydro');
 
   // A lower score keeps the best.
   const s2 = (await call('POST', '/sessions', { token, body: { game: 'telegram_country_quiz', mode: 'easy' } })).body.session.id;

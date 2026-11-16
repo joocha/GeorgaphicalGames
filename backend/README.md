@@ -1,6 +1,6 @@
 # Geography Game API
 
-The Express backend for Atlas Quest. It listens **only on `127.0.0.1:3020`**, and Nginx is the public entry point for `/api/`. In production it runs as a native **systemd** service and writes its logs to the systemd journal. It doesn't use any third-party process manager.
+The Express backend for GeoAIGames (Atlas Quest and the five-level platform). **The full documentation is in [../docs/](../docs/)**: API in [API_REFERENCE.md](../docs/API_REFERENCE.md), schema in [DATABASE_SCHEMA.md](../docs/DATABASE_SCHEMA.md), setup and deployment in [DEVELOPMENT_GUIDE.md](../docs/DEVELOPMENT_GUIDE.md). This file keeps the v1 server and production details. It listens **only on `127.0.0.1:3020`**, and Nginx is the public entry point for `/api/`. In production it runs as a native **systemd** service and writes its logs to the systemd journal. It doesn't use any third-party process manager.
 
 ## Architecture
 
@@ -18,8 +18,11 @@ Browser / Telegram ──HTTPS──▶ Nginx ──┬── /          static 
 | `src/config.js` | Reads the environment and refuses to start on a non-loopback host |
 | `src/db.js` | PostgreSQL connection pool (node-postgres) and transaction helper |
 | `src/auth/` | Telegram `initData` verification and API access tokens |
-| `src/services/` | Player login/registration and game sessions/results |
-| `test/` | End-to-end API test against the real migrations (PGlite), `npm test` |
+| `src/services/` | Player login/registration, game sessions (client-run and question engine), levels and progression, statistics, internal n8n API |
+| `src/engine/` | Pure question-engine logic: question types, answer validation, scoring, presentation |
+| `src/content/`, `content/` | Content pipeline and the reviewed facts and questions it imports |
+| `scripts/` | CLIs: `content.js` (check/import), `questions.js` (review), `admin-unlock.js` |
+| `test/` | Unit, content and end-to-end tests against the real migrations (PGlite), `npm test` |
 | `.env.example` | Environment template |
 | `deployment/geography-game-api.service.example` | Example systemd unit (not installed automatically) |
 | `prisma/` | PostgreSQL schema, migrations and constraint checks (Prisma 7) |
@@ -74,7 +77,7 @@ npm run db:status            # pending migrations on DATABASE_URL
 npm run db:migrate:deploy    # apply them (never resets data)
 ```
 
-**Migrations are never applied automatically**, and `deploy.yml` doesn't run them. On production an administrator runs `npm run db:migrate:deploy` manually, after taking a backup.
+**Migrations are never applied automatically**, and `deploy.yml` doesn't run them. The same goes for content (`npm run content:import`). For v2.0.0 both must run **before** the code is deployed; see [DEVELOPMENT_GUIDE.md](../docs/DEVELOPMENT_GUIDE.md#deploying-a-release). On production an administrator runs `npm run db:migrate:deploy` manually, after taking a backup.
 
 ## Production: systemd
 

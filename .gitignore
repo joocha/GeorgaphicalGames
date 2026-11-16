@@ -9,3 +9,4 @@ tools/map.json
 # GitHub Actions workflows must be tracked
 !.github/workflows/*.yml
 backend/src/generated/
+tools/.cache/

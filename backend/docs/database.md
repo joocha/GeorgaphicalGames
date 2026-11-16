@@ -1,5 +1,7 @@
 # Database
 
+> **v2.0.0:** levels, the question engine and the geographic knowledge base added 10 tables and some nullable columns. They are documented in [docs/DATABASE_SCHEMA.md](../../docs/DATABASE_SCHEMA.md), which also covers the whole model. This file remains the detailed reference for the v1 core: identity, catalog, sessions, results and outbox. Sections 9 and 10 below describe the state *before* v2: `game_answers` now exists (with a different design, see DATABASE_SCHEMA.md), and game content for levels 2–5 is now in the database.
+
 This is the PostgreSQL schema for Atlas Quest. It covers player accounts, external login identities, the game catalog, game sessions, final results, and a transactional outbox for future n8n integration.
 
 | File | Purpose |

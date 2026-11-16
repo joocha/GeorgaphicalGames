@@ -1,0 +1,64 @@
+{
+  "_doc": "Data sources referenced by geo-objects.json, resource-stats.json and questions/*.json. See docs/GEOGRAPHIC_DATA_SOURCES.md.",
+  "sources": [
+    {
+      "code": "natural_earth",
+      "name": "Natural Earth",
+      "url": "https://www.naturalearthdata.com/",
+      "license": "Public domain",
+      "attribution": "Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.",
+      "retrievedAt": "2026-11-17",
+      "notes": "Country shapes (1:110m, via the world-atlas 2.0 package) and river/lake geometry (1:50m) for the map layers."
+    },
+    {
+      "code": "wikidata",
+      "name": "Wikidata",
+      "url": "https://www.wikidata.org/",
+      "license": "CC0 1.0",
+      "attribution": "Wikidata",
+      "retrievedAt": "2026-11-17",
+      "notes": "Coordinates (P625), countries (P17), mouths of watercourses (P403), mountain ranges (P4552), retrieved with the wbgetentities API."
+    },
+    {
+      "code": "wikipedia",
+      "name": "Wikipedia (English)",
+      "url": "https://en.wikipedia.org/",
+      "license": "CC BY-SA 4.0",
+      "attribution": "Wikipedia contributors",
+      "retrievedAt": "2026-11-17",
+      "notes": "Used to confirm descriptive facts (what a strait connects, where a river rises). Only facts are used; no text is copied."
+    },
+    {
+      "code": "usgs_mcs_2026",
+      "name": "U.S. Geological Survey, Mineral Commodity Summaries 2026",
+      "url": "https://pubs.usgs.gov/periodicals/mcs2026/",
+      "license": "Public domain (U.S. Government work)",
+      "attribution": "U.S. Geological Survey, Mineral Commodity Summaries, February 2026",
+      "retrievedAt": "2026-11-17",
+      "notes": "World mine production and reserves tables of the copper, cobalt, lithium, gold, iron ore, nickel and rare earths chapters. Production years 2024 (reported or estimated) and 2025 (estimated); reserves and resources as published in the 2026 edition."
+    },
+    {
+      "code": "nile_basin_initiative",
+      "name": "Nile Basin Initiative",
+      "url": "https://nilebasin.org/nile-basin",
+      "license": "Facts only; no content reproduced",
+      "attribution": "Nile Basin Initiative",
+      "retrievedAt": "2026-11-17",
+      "notes": "The Nile basin is shared by 11 countries: the 10 NBI members plus Eritrea (observer)."
+    },
+    {
+      "code": "world_bank_wdi",
+      "name": "World Bank, World Development Indicators",
+      "url": "https://data.worldbank.org/",
+      "license": "CC BY 4.0",
+      "attribution": "The World Bank: World Development Indicators",
+      "retrievedAt": "2026-11-17",
+      "notes": "EN.POP.DNST (population density), SP.POP.TOTL (population), TX.VAL.MRCH.CD.WT (merchandise exports), via api.worldbank.org/v2."
+    }
+  ],
+  "extraCountries": [
+    { "name": "Liechtenstein", "wikidata": "Q347", "note": "Not on the 1:110m map" },
+    { "name": "Monaco", "wikidata": "Q235", "note": "Not on the 1:110m map" },
+    { "name": "Singapore", "wikidata": "Q334", "note": "Not on the 1:110m map" }
+  ]
+}

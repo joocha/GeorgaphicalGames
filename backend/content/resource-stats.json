@@ -1,0 +1,50 @@
+{
+  "_doc": "Country-level mineral statistics. `metric` is mine_production, reserves or identified_resources and is never mixed. Values and ranks are copied from the world tables of USGS Mineral Commodity Summaries 2026 (2024 production column; reserves and resources as published in the 2026 edition, recorded as data year 2025). `estimate` mirrors the USGS 'e' mark. Rank is only stored where the table makes it unambiguous; see `note`.",
+  "stats": [
+    { "resource": "copper", "country": "Chile", "metric": "mine_production", "value": 5510, "unit": "thousand t (Cu content)", "year": 2024, "rank": 1, "source": "usgs_mcs_2026" },
+    { "resource": "copper", "country": "DR Congo", "metric": "mine_production", "value": 2990, "unit": "thousand t (Cu content)", "year": 2024, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "copper", "country": "Peru", "metric": "mine_production", "value": 2740, "unit": "thousand t (Cu content)", "year": 2024, "rank": 3, "source": "usgs_mcs_2026" },
+    { "resource": "copper", "country": "China", "metric": "mine_production", "value": 1840, "unit": "thousand t (Cu content)", "year": 2024, "rank": 4, "source": "usgs_mcs_2026" },
+    { "resource": "copper", "country": "United States", "metric": "mine_production", "value": 1050, "unit": "thousand t (Cu content)", "year": 2024, "rank": 5, "source": "usgs_mcs_2026" },
+    { "resource": "copper", "country": "Australia", "metric": "mine_production", "value": 765, "unit": "thousand t (Cu content)", "year": 2024, "source": "usgs_mcs_2026" },
+    { "resource": "copper", "country": "Chile", "metric": "reserves", "value": 180000, "unit": "thousand t (Cu content)", "year": 2025, "rank": 1, "source": "usgs_mcs_2026" },
+
+    { "resource": "cobalt", "country": "DR Congo", "metric": "mine_production", "value": 226000, "unit": "t (Co content)", "year": 2024, "estimate": true, "rank": 1, "source": "usgs_mcs_2026",
+      "note": "About 75% of the 302,000 t world total." },
+    { "resource": "cobalt", "country": "Indonesia", "metric": "mine_production", "value": 35000, "unit": "t (Co content)", "year": 2024, "estimate": true, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "cobalt", "country": "DR Congo", "metric": "reserves", "value": 6000000, "unit": "t (Co content)", "year": 2025, "rank": 1, "source": "usgs_mcs_2026" },
+
+    { "resource": "lithium", "country": "Australia", "metric": "mine_production", "value": 82700, "unit": "t (Li content)", "year": 2024, "estimate": true, "rank": 1, "source": "usgs_mcs_2026",
+      "note": "U.S. production is withheld (W) by USGS and excluded from the ranking; it comes from a single brine operation." },
+    { "resource": "lithium", "country": "Chile", "metric": "mine_production", "value": 48900, "unit": "t (Li content)", "year": 2024, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "lithium", "country": "China", "metric": "mine_production", "value": 41400, "unit": "t (Li content)", "year": 2024, "estimate": true, "rank": 3, "source": "usgs_mcs_2026" },
+    { "resource": "lithium", "country": "Chile", "metric": "reserves", "value": 9200000, "unit": "t (Li content)", "year": 2025, "rank": 1, "source": "usgs_mcs_2026" },
+    { "resource": "lithium", "country": "Australia", "metric": "reserves", "value": 8400000, "unit": "t (Li content)", "year": 2025, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "lithium", "country": "Argentina", "metric": "identified_resources", "value": 28000000, "unit": "t (Li content)", "year": 2025, "rank": 1, "source": "usgs_mcs_2026",
+      "note": "Measured and indicated resources." },
+    { "resource": "lithium", "country": "Bolivia", "metric": "identified_resources", "value": 23000000, "unit": "t (Li content)", "year": 2025, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "lithium", "country": "Chile", "metric": "identified_resources", "value": 13000000, "unit": "t (Li content)", "year": 2025, "rank": 3, "source": "usgs_mcs_2026" },
+
+    { "resource": "gold", "country": "China", "metric": "mine_production", "value": 377, "unit": "t (Au content)", "year": 2024, "rank": 1, "source": "usgs_mcs_2026" },
+    { "resource": "gold", "country": "Russia", "metric": "mine_production", "value": 310, "unit": "t (Au content)", "year": 2024, "estimate": true, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "gold", "country": "Australia", "metric": "mine_production", "value": 284, "unit": "t (Au content)", "year": 2024, "rank": 3, "source": "usgs_mcs_2026" },
+    { "resource": "gold", "country": "South Africa", "metric": "mine_production", "value": 90, "unit": "t (Au content)", "year": 2024, "source": "usgs_mcs_2026" },
+    { "resource": "gold", "country": "Australia", "metric": "reserves", "value": 13000, "unit": "t (Au content)", "year": 2025, "rank": 1, "source": "usgs_mcs_2026" },
+    { "resource": "gold", "country": "Russia", "metric": "reserves", "value": 12000, "unit": "t (Au content)", "year": 2025, "rank": 2, "source": "usgs_mcs_2026" },
+
+    { "resource": "iron_ore", "country": "Australia", "metric": "mine_production", "value": 982000, "unit": "thousand t (usable ore)", "year": 2024, "rank": 1, "source": "usgs_mcs_2026" },
+    { "resource": "iron_ore", "country": "Brazil", "metric": "mine_production", "value": 428000, "unit": "thousand t (usable ore)", "year": 2024, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "iron_ore", "country": "China", "metric": "mine_production", "value": 293000, "unit": "thousand t (usable ore)", "year": 2024, "rank": 3, "source": "usgs_mcs_2026" },
+    { "resource": "iron_ore", "country": "Sweden", "metric": "mine_production", "value": 25000, "unit": "thousand t (usable ore)", "year": 2024, "estimate": true, "source": "usgs_mcs_2026" },
+
+    { "resource": "nickel", "country": "Indonesia", "metric": "mine_production", "value": 2310000, "unit": "t (Ni content)", "year": 2024, "rank": 1, "source": "usgs_mcs_2026" },
+    { "resource": "nickel", "country": "Philippines", "metric": "mine_production", "value": 354000, "unit": "t (Ni content)", "year": 2024, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "nickel", "country": "Russia", "metric": "mine_production", "value": 205000, "unit": "t (Ni content)", "year": 2024, "rank": 3, "source": "usgs_mcs_2026" },
+
+    { "resource": "rare_earths", "country": "China", "metric": "mine_production", "value": 270000, "unit": "t (REO equivalent)", "year": 2024, "estimate": true, "rank": 1, "source": "usgs_mcs_2026" },
+    { "resource": "rare_earths", "country": "United States", "metric": "mine_production", "value": 45500, "unit": "t (REO equivalent)", "year": 2024, "rank": 2, "source": "usgs_mcs_2026" },
+    { "resource": "rare_earths", "country": "Australia", "metric": "mine_production", "value": 29000, "unit": "t (REO equivalent)", "year": 2024, "estimate": true, "rank": 3, "source": "usgs_mcs_2026" },
+    { "resource": "rare_earths", "country": "Myanmar", "metric": "mine_production", "value": 27000, "unit": "t (REO equivalent)", "year": 2024, "estimate": true, "rank": 4, "source": "usgs_mcs_2026",
+      "note": "Listed as Burma by USGS; estimated from Chinese import data." }
+  ]
+}
