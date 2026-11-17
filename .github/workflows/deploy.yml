@@ -41,8 +41,9 @@ jobs:
             # The systemd unit is installed manually by an administrator
             # (see backend/README.md). Until then, only the code is updated.
             SERVICE_INSTALLED=0
-            if systemctl cat "$SERVICE_NAME" >/dev/null 2>&1; then
-              SERVICE_INSTALLED=1
+            if systemctl show "$SERVICE_NAME.service" \
+                --property=LoadState --value 2>/dev/null | grep -qx "loaded"; then
+                SERVICE_INSTALLED=1
             fi
 
             # On any failure, show why. If the API was stopped, it stays
