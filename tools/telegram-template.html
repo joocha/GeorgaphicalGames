@@ -167,7 +167,7 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
   <div>
     <div class="hello" id="hello">Hi, explorer!</div>
     <h1>GeoAIGames</h1>
-    <p class="sub">Five levels of geography. Finish a level to unlock the next one.</p>
+    <p class="sub">Five levels of geography. Collect points to unlock the next level.</p>
   </div>
   <div class="levels" id="levels"></div>
   <div class="sync" id="syncStart"></div>
@@ -187,6 +187,7 @@ h1{margin:2px 0 6px;font-size:30px;line-height:1.1;letter-spacing:-.02em}
       <button data-l="hard">Hard · all countries</button>
     </div>
     <div class="best"><span>Best score</span><span id="bestTxt">—</span></div>
+    <p class="hint" id="l1Pts" style="margin:0;text-align:center"></p>
     <button class="cta" id="play">Play</button>
   </div>
 </section>
@@ -391,16 +392,30 @@ function makeMap(host,onTap){
 const $=id=>document.getElementById(id);
 const startMap=makeMap($("startMap"));
 let level="easy",best={easy:null,hard:null},spotT;
-function showBest(){const b=best[level];$("bestTxt").textContent=b==null?"Not played yet":`${b} points`}
+// v2.1 scale. Device bests use new keys; old ones (100 per answer) are read
+// once and divided by 10, the same normalization the server applies.
+const BEST_KEY=l=>"best2_"+l;
+// Level 1 points per correct answer come from the server (GET /levels, mode
+// rules); these match the server's rules and are only used without the API.
+const L1_POINTS={easy:{correct:10,streakBonusPerStep:1,streakBonusCap:5},hard:{correct:20,streakBonusPerStep:2,streakBonusCap:10}};
+function l1Points(l){const m=LEVELS&&LEVELS[0]&&LEVELS[0].modes&&LEVELS[0].modes.find(x=>x.code===l);return(m&&m.points)||L1_POINTS[l]}
+function showBest(){const b=best[level];$("bestTxt").textContent=b==null?"Not played yet":`${fmt(b)} points`;
+  const p=l1Points(level);$("l1Pts").textContent=`${p.correct} points per country, plus a streak bonus of up to ${p.streakBonusCap}.`}
 function showSync(){const el=$("syncStart");
   el.textContent=online()?"☁️ Progress is saved to your profile":!inTG?"Open in Telegram to save your progress":!auth.loginP?"Offline · scores are saved on this device":"";
   el.classList.toggle("ok",online())}
 // Server bests per mode; keep whichever is higher, the device's or the server's.
 function mergeBests(bests){const m=bests&&bests[API_GAME];if(!m)return;
-  ["easy","hard"].forEach(l=>{const v=m[l]&&m[l].best;if(v!=null&&(best[l]==null||v>best[l])){best[l]=v;store.set("best_"+l,v)}})}
-// Greets the player by the name the API verified with Telegram.
+  ["easy","hard"].forEach(l=>{const v=m[l]&&m[l].best;if(v!=null&&(best[l]==null||v>best[l])){best[l]=v;store.set(BEST_KEY(l),v)}})}
+// The player's name, verified by the API with Telegram, followed by their
+// lifetime score and level from the server: "Ana (Score: 5,250 | Level: 3)".
+let playerName=null,progress=null;
+function renderHello(){if(!playerName)return;
+  $("hello").textContent=progress?`${playerName} (Score: ${fmt(progress.totalScore)} | Level: ${progress.level})`:`Hi, ${playerName}!`}
+// Any API response that carries the summary (login, /levels, a saved game).
+function setProgress(p){if(p&&p.level!=null){progress=p;renderHello()}}
 function signedIn(d){mergeBests(d.bests);const n=d.player.profile&&d.player.profile.displayName;
-  if(n)$("hello").textContent=`Hi, ${n.split(" ")[0]}!`}
+  if(n)playerName=n.split(" ")[0];setProgress(d.player.progress);renderHello()}
 $("level").onclick=e=>{const b=e.target.closest("button");if(!b)return;level=b.dataset.l;haptic("tap");
   $("level").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));showBest()};
 function spotlight(){const n=EASY[rnd(EASY.length)];startMap.clear();startMap.paint([n],"hl");startMap.fit([n,...nearest(n,6)],1.3,220);startMap.label(n)}
@@ -423,7 +438,7 @@ async function startGame(){
   if(mustSignIn){starting=true;const ok=await ensureSession().finally(()=>{starting=false});if(!ok)return}
   clearInterval(spotT);EG=null;resetGameMap();
   const pool=shuffle(level==="easy"?EASY:ALL).slice(0,ROUNDS);
-  G={qs:pool.map((n,i)=>({n,type:i%2?"name":"find"})),i:0,score:0,correct:0,streak:0,bestStreak:0,res:[],done:false};
+  G={qs:pool.map((n,i)=>({n,type:i%2?"name":"find"})),i:0,score:0,correct:0,streak:0,bestStreak:0,res:[],done:false,pts:l1Points(level)};
   // Open a game session on the server without blocking play.
   G.sessionP=online()||auth.loginP
     ?api("POST","/sessions",{game:API_GAME,mode:level,clientPlatform:inTG?"telegram":"web"}).then(d=>d.session.id).catch(()=>null)
@@ -462,7 +477,7 @@ function pickOption(btn){
 }
 function settle(ok,chosen){
   const q=G.qs[G.i];G.locked=true;let gain=0;
-  if(ok){G.streak++;G.correct++;gain=100+Math.min(50,(G.streak-1)*10);G.score+=gain;G.bestStreak=Math.max(G.bestStreak,G.streak);haptic("success")}
+  if(ok){G.streak++;G.correct++;gain=G.pts.correct+Math.min(G.pts.streakBonusCap,(G.streak-1)*G.pts.streakBonusPerStep);G.score+=gain;G.bestStreak=Math.max(G.bestStreak,G.streak);haptic("success")}
   else{G.streak=0;haptic("error")}
   G.res[G.i]=ok;header();
   $("gameMap").classList.remove("tap");
@@ -493,7 +508,7 @@ function saveResult(g){
 function finish(){
   G.done=true;const saved=saveResult(G),lvl=level;
   const isBest=best[level]==null||G.score>best[level];
-  if(isBest){best[level]=G.score;store.set("best_"+level,G.score)}
+  if(isBest){best[level]=G.score;store.set(BEST_KEY(level),G.score)}
   const msg=G.correct>=9?"Map master!":G.correct>=7?"Great explorer!":G.correct>=5?"Good trip!":"The world is big. Try again!";
   $("sResult").innerHTML=`
     <div class="hint">${level==="easy"?"Easy":"Hard"} mode</div>
@@ -507,7 +522,7 @@ function finish(){
     <div class="sync" id="syncResult">${online()||auth.loginP?"Saving…":""}</div>`;
   show("sResult");
   saved.then(d=>{const el=$("syncResult");
-    if(d&&d.best&&d.best.value!=null&&(best[lvl]==null||d.best.value>best[lvl])){best[lvl]=d.best.value;store.set("best_"+lvl,d.best.value)}
+    if(d&&d.best&&d.best.value!=null&&(best[lvl]==null||d.best.value>best[lvl])){best[lvl]=d.best.value;store.set(BEST_KEY(lvl),d.best.value)}
     if(!el)return;
     el.textContent=d?"☁️ Saved to your profile":mustSignIn&&auth.state==="expired"?"Session expired · this game wasn't saved to your profile":online()?"Couldn't save this game to your profile":"";
     el.classList.toggle("ok",!!d);
@@ -534,7 +549,7 @@ const FALLBACK_LEVELS=[
   {number:5,code:"master",name:"Master Explorer",icon:"🧭",multiplier:5,shortDescription:"Mixed challenges that combine everything you have learned."}];
 let LEVELS=null;
 async function loadLevels(){if(!online())return null;
-  try{const d=await api("GET","/levels");LEVELS=d.levels;return LEVELS}catch(e){console.warn("levels:",e.message);return null}}
+  try{const d=await api("GET","/levels");LEVELS=d.levels;setProgress(d.player);return LEVELS}catch(e){console.warn("levels:",e.message);return null}}
 const levelList=()=>LEVELS||FALLBACK_LEVELS;
 const fmt=n=>n==null?"—":Number(n).toLocaleString("en-US");
 let toastT;function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),2600)}
@@ -550,12 +565,13 @@ function goHome(){
     const pct=m?Math.round(m.mastered/m.total*100):p?Math.min(100,Math.round(p.completedSessions/p.requiredSessions*100)):0;
     const progTxt=m?`${m.mastered}/${m.total} mastered`:l.completed?"Completed":"Not completed";
     const hint=locked?(LEVELS?l.unlockHint:"Open GeoAIGames in Telegram to unlock"):null;
+    const up=locked&&l.unlockProgress,lockTxt=up?`🔒 ${fmt(up.score)} / ${fmt(up.required)} points`:"🔒 Locked";
     return `<button class="lvl${locked?" locked":""}${l.completed?" done":""}" data-code="${esc(l.code)}" aria-label="Level ${l.number}, ${esc(l.name)}${locked?", locked":""}">
       <span class="ico">${l.icon}</span>
       <span class="ttl"><small>Level ${l.number}</small>${esc(l.name)}</span>
       <span class="mul">×${l.multiplier}</span>
       <span class="ds">${esc(locked?hint:l.shortDescription)}</span>
-      <span class="meta">${locked?"🔒 Locked":`<span>Best ${fmt(bestV)}</span><span class="bar"><i style="width:${pct}%"></i></span><span>${esc(progTxt)}</span>`}
+      <span class="meta">${locked?(up?`<span>${lockTxt}</span><span class="bar"><i style="width:${Math.min(100,Math.round(up.score/up.required*100))}%"></i></span>`:lockTxt):`<span>Best ${fmt(bestV)}</span><span class="bar"><i style="width:${pct}%"></i></span><span>${esc(progTxt)}</span>`}
         <span class="go">${locked?"":"Play"}</span></span>
     </button>`}).join("");
   show("sHome");showSync();
@@ -565,6 +581,7 @@ $("levels").onclick=e=>{const b=e.target.closest(".lvl");if(!b)return;const l=le
   haptic("tap");if(l.number===1){$("l1Label").textContent=`Level 1 · ×${l.multiplier} points`;goStart()}else openIntro(l)};
 
 function openIntro(l){
+  const pts=(l.modes&&l.modes[0]&&l.modes[0].points)||{correct:10,streakBonusCap:5};
   const cats=(l.categories||[]).map(c=>`<span class="${c.questions?"":"soon"}">${esc(c.name)}${c.questions?"":" · soon"}</span>`).join("");
   $("sIntro").innerHTML=`
     <div class="head"><span class="ico">${l.icon}</span><div><div class="hint">Level ${l.number} · ×${l.multiplier} points</div><h1 style="margin:0">${esc(l.name)}</h1></div></div>
@@ -572,7 +589,7 @@ function openIntro(l){
     <div class="kind">Categories</div><div class="chips">${cats}</div>
     <div class="kind">Rules</div>
     <ul class="rules"><li>${l.rounds||10} rounds. Some are answered on the map, some with options.</li>
-      <li>100 points per correct answer, plus a streak bonus of up to 50.</li>
+      <li>${pts.correct} points per correct answer, plus a streak bonus of up to ${pts.streakBonusCap}.</li>
       <li>Questions with several answers give partial points.</li>
       <li>Every point is multiplied by ×${l.multiplier} on this level.</li></ul>
     <div class="best"><span>Best score</span><span>${l.best==null?"Not played yet":fmt(l.best)+" points"}</span></div>
@@ -583,7 +600,7 @@ function openIntro(l){
 
 // After any recorded result: refresh levels and celebrate new unlocks.
 function afterResult(d,el){
-  loadLevels();
+  setProgress(d.player);loadLevels();
   if(d.unlocked&&d.unlocked.length&&el){const u=d.unlocked[0];
     const at=$("again")||el;at.insertAdjacentHTML("beforebegin",`<div class="unlocked">🔓 Level ${u.number} · ${esc(u.name)} unlocked!</div>`);haptic("success")}}
 
@@ -706,7 +723,9 @@ async function finishEngine(){
 /* ===== BOOT =====
    Telegram: Initializing → Authenticating → start screen (or an error).
    Browser, or REQUIRE_LOGIN off: the start screen opens right away. */
-const bestsP=Promise.all([store.get("best_easy"),store.get("best_hard")]).then(([e,h])=>{best.easy=e?+e:null;best.hard=h?+h:null});
+const bestsP=Promise.all(["easy","hard"].map(async l=>{let v=await store.get(BEST_KEY(l));
+  if(!v){const old=await store.get("best_"+l);if(old){v=Math.round(+old/10);store.set(BEST_KEY(l),v)}}
+  best[l]=v?+v:null}));
 if(mustSignIn){
   gate("initializing");
   Promise.all([bestsP,authenticate()]).then(([,ok])=>{if(ok)loadLevels().finally(goHome)});

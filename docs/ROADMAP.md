@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated: 2026-11-17 (v2.0.0, not yet deployed).
+Last updated: 2026-11-18 (v2.1.0 prepared, not yet deployed).
 
 ## Completed
 
@@ -21,14 +21,16 @@ Last updated: 2026-11-17 (v2.0.0, not yet deployed).
 | **Per-level bests and progress, statistics endpoint** | v2.0.0 |
 | **n8n internal API (verified facts, AI drafts) and review CLI** | v2.0.0 |
 | **Documentation system (`docs/`, `CLAUDE.md`)** | v2.0.0 |
+| **Scoring ÷10, Level 1 Hard = 2× Easy, versioned score scale (history normalized on read)** | v2.1.0 |
+| **Unlocking by lifetime score (1,000 / 3,000 / 6,000 / 10,000), `user_profiles.level`, name line with score and level** | v2.1.0 |
 
 ## Current stage
 
-Phase A (platform foundation) and Phase B (question engine) are complete. Phases C–F have the reusable architecture and a small verified sample each. Next: deploy v2.0.0 (manual migration + import), then a human review of the seed questions.
+Phase A (platform foundation) and Phase B (question engine) are complete. Phases C–F have the reusable architecture and a small verified sample each. v2.1.0 adds score-threshold progression on top. Next: deploy v2.0.0 (if not live yet) and v2.1.0 (manual migrations), then a human review of the seed questions.
 
 ## Next priorities
 
-1. **Deploy v2.0.0** following [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md#v200-deployment-manual-steps-in-this-order); spot-check the 80 seed questions.
+1. **Deploy v2.1.0** (migration with the API stopped) following [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md#v210-deployment-manual-steps-in-this-order); if v2.0.0 isn't live yet, do its steps first. Spot-check the 80 seed questions.
 2. **Statistics UI**: a profile screen using `GET /me/stats` (backend exists, no screen yet).
 3. **Outbox dispatcher** to n8n (design in `backend/docs/database.md` §7); then the draft-generation workflow using `/internal/geo-objects` and `/internal/question-drafts`.
 4. **More content per level** (target ≥ 60 verified questions each) so repeats become rare.
@@ -41,7 +43,8 @@ Phase A (platform foundation) and Phase B (question engine) are complete. Phases
 - Phase E+ (Resources): oil, natural gas and coal statistics (choose EIA or the Energy Institute), diamonds production (Kimberley Process), a deposit layer.
 - Phase F+ (Master): megacities (choose one definition and source), trade-route lines, climate-zone polygons.
 - Achievements (tables sketched in `backend/docs/database.md` §9; `user_level_unlocks.source = 'achievement'` reserved).
-- Leaderboards per level (queries exist in `backend/docs/database.md` §8).
+- Leaderboards per level (queries exist in `backend/docs/database.md` §8; rank by `progressScoreSql()` so old and new results compare fairly).
+- Level 6 (unlock at 15,000 lifetime points; rule type `total_score` ready).
 - Session length choice in the UI (backend supports `allowedRounds`).
 - Time limits and time bonus (`time_limit_sec`, `timeBonus` reserved).
 - AI hints, adaptive difficulty, category recommendations (n8n).

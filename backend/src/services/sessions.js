@@ -1,7 +1,10 @@
 import { withTransaction } from '../db.js';
 import { HttpError } from '../http-error.js';
 import { assertLevelUnlocked, progressAfterResult } from './levels.js';
-import { scoringSnapshot, scoreAnswer, sessionTotals, applyMultiplier, toMultiplier } from '../engine/scoring.js';
+import {
+  scoringSnapshot, scoreAnswer, sessionTotals, applyMultiplier, toMultiplier, pointsSummary, progressScore,
+} from '../engine/scoring.js';
+import { progressScoreSql, playerSummary } from './progression.js';
 import { evaluateAnswer } from '../engine/evaluate.js';
 import { publicQuestion, reveal, isMulti, QUESTION_COLUMNS, QUESTION_JOINS } from '../engine/present.js';
 
@@ -189,7 +192,8 @@ export async function startSession(pool, userId, body = {}) {
            VALUES ($1, $2, $3, $4, $5, $6)`,
           [session.id, i, q.id, q.version, JSON.stringify(q.correct_answers), snapshot.multiplier],
         );
-        questions.push(publicQuestion(q, i));
+        // Points the player can earn, on the session's scale.
+        questions.push({ ...publicQuestion(q, i), basePoints: Math.round(q.base_points * (snapshot.scoring.pointScale ?? 1)) });
       }
     }
 
@@ -204,7 +208,11 @@ export async function startSession(pool, userId, body = {}) {
         roundsPerSession: engine ? questionIds.length : mode.rounds_per_session,
         bestMetric: mode.best_metric,
         level: level ? { code: level.code, number: level.number, name: level.name } : null,
-        scoring: snapshot ? { multiplier: snapshot.multiplier, engine: snapshot.engine } : null,
+        scoring: snapshot ? {
+          multiplier: snapshot.multiplier,
+          engine: snapshot.engine,
+          points: pointsSummary(engine ? { engine: 'question_engine', scoring: snapshot.scoring } : { scoring: snapshot.scoring }),
+        } : null,
       },
       ...(engine && { questions }),
       abandonedSessions: abandoned.rowCount,
@@ -303,9 +311,10 @@ function maxStreakBonus(correct, step, cap) {
   return bonus;
 }
 
-// Checks a submitted result of a client-run game against the mode's rules in
-// game_modes.config. The frontend runs the game; this only rejects
-// impossible results. `score` here is the BASE score (before the multiplier).
+// Checks a submitted result of a client-run game against the mode's rules
+// (`mode.config.scoring`; for a session, the rules snapshotted when it
+// started). The frontend runs the game; this only rejects impossible
+// results. `score` here is the BASE score (before the multiplier).
 export function validateResult(mode, body = {}) {
   const totalRounds = mode.rounds_per_session;
   const scoring = mode.config?.scoring || {};
@@ -411,7 +420,10 @@ export async function completeSession(pool, userId, rawSessionId, body) {
     if (session.scoring_rules?.engine === 'question_engine') {
       result = await engineResult(db, id);
     } else {
-      const base = validateResult(session, body);
+      // Validate against the rules the session started with, so a scoring
+      // change never rejects a game that was already running.
+      const rules = session.scoring_rules?.scoring ?? session.config?.scoring;
+      const base = validateResult({ ...session, config: { ...session.config, scoring: rules } }, body);
       const hasMultiplier = session.score_multiplier !== null;
       result = {
         ...base,
@@ -420,10 +432,12 @@ export async function completeSession(pool, userId, rawSessionId, body) {
       };
     }
     const multiplier = session.score_multiplier === null ? null : toMultiplier(session.score_multiplier);
-    const column = BEST_COLUMN[session.best_metric];
+    const scoringVersion = session.scoring_rules?.version ?? null;
+    // Scores are compared on the current scale (older results ÷10).
+    const column = session.best_metric === 'score' ? progressScoreSql('r') : `r.${BEST_COLUMN[session.best_metric]}`;
 
     const previous = await db.query(
-      `SELECT max(${column}) AS best FROM game_results WHERE user_id = $1 AND game_mode_id = $2`,
+      `SELECT max(${column}) AS best FROM game_results r WHERE r.user_id = $1 AND r.game_mode_id = $2`,
       [userId, session.game_mode_id],
     );
     const previousBest = previous.rows[0].best;
@@ -440,13 +454,13 @@ export async function completeSession(pool, userId, rawSessionId, body) {
     const inserted = await db.query(
       `INSERT INTO game_results
          (session_id, user_id, game_mode_id, score, correct_count, total_rounds,
-          stars, best_streak, xp_earned, duration_ms, details, base_score, score_multiplier)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          stars, best_streak, xp_earned, duration_ms, details, base_score, score_multiplier, scoring_version)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING id, score, correct_count, total_rounds, stars, best_streak,
                  xp_earned, duration_ms, completed_at, base_score`,
       [id, userId, session.game_mode_id, result.score, result.correctCount, result.totalRounds,
         result.stars, result.bestStreak, result.xpEarned, ended.rows[0].duration_ms, result.details,
-        result.baseScore, multiplier],
+        result.baseScore, multiplier, scoringVersion],
     );
     const row = inserted.rows[0];
 
@@ -463,6 +477,7 @@ export async function completeSession(pool, userId, rawSessionId, body) {
         score: row.score,
         baseScore: row.base_score,
         scoreMultiplier: multiplier,
+        scoringVersion,
         correctCount: row.correct_count,
         totalRounds: row.total_rounds,
         stars: row.stars,
@@ -473,9 +488,13 @@ export async function completeSession(pool, userId, rawSessionId, body) {
       }],
     );
 
-    const value = { score: row.score, correct_count: row.correct_count, stars: row.stars }[session.best_metric];
+    const value = {
+      score: progressScore(row.score, scoringVersion), correct_count: row.correct_count, stars: row.stars,
+    }[session.best_metric];
     const isNewBest = previousBest === null || value > previousBest;
     const progress = session.level_id ? await progressAfterResult(db, userId, session.level_id) : null;
+    // Lifetime score and level for the name display, including this game.
+    const player = progress ? progress.player : await playerSummary(db, userId);
 
     return {
       result: {
@@ -484,6 +503,7 @@ export async function completeSession(pool, userId, rawSessionId, body) {
         score: row.score,
         baseScore: row.base_score,
         scoreMultiplier: multiplier,
+        scoringVersion,
         correctCount: row.correct_count,
         totalRounds: row.total_rounds,
         stars: row.stars,
@@ -492,6 +512,7 @@ export async function completeSession(pool, userId, rawSessionId, body) {
         durationMs: row.duration_ms,
         completedAt: row.completed_at,
       },
+      player,
       best: {
         metric: session.best_metric,
         value: isNewBest ? value : previousBest,

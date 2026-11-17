@@ -1,4 +1,5 @@
 import { withTransaction } from '../db.js';
+import { progressScoreSql } from './progression.js';
 
 const TELEGRAM = 'telegram';
 
@@ -140,11 +141,12 @@ export async function getProfile(db, userId) {
 
 // Personal bests per mode of one game, keyed by mode code. "best" follows
 // the mode's best_metric, so it matches what the frontend shows
-// (docs/database.md, section 8).
+// (docs/database.md, section 8). Scores are on the current scale: results
+// recorded before v2.1.0 count ÷10 (docs/SCORING_AND_PROGRESSION.md).
 export async function getPersonalBests(db, userId, gameCode) {
   const { rows } = await db.query(
     `SELECT gm.code AS mode, gm.best_metric,
-            CASE gm.best_metric WHEN 'score'         THEN max(r.score)
+            CASE gm.best_metric WHEN 'score'         THEN max(${progressScoreSql('r')})
                                 WHEN 'correct_count' THEN max(r.correct_count)
                                 WHEN 'stars'         THEN max(r.stars) END AS best,
             count(r.id)::int AS plays,

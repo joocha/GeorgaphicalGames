@@ -71,6 +71,11 @@ model UserProfile {
   avatarUrl   String?  @map("avatar_url")
   // BCP 47 language tag, e.g. Telegram's `language_code`.
   locale      String?  @db.VarChar(35)
+  // v2.1: highest level N such that levels 1..N are all unlocked for this
+  // player. Derived from unlocks (user_level_unlocks + unlock rules) and kept
+  // in sync by the backend; it never decreases (CHECK + trigger in migration
+  // 20261118000000). Docs: docs/SCORING_AND_PROGRESSION.md.
+  level       Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -238,6 +243,12 @@ model GameResult {
   // recorded before v2.0.0, whose score is kept exactly as it was (1x).
   baseScore       Int?     @map("base_score")
   scoreMultiplier Decimal? @map("score_multiplier") @db.Decimal(5, 2)
+  // v2.1: version of the scoring scale the score was computed with (copied
+  // from game_sessions.scoring_rules.version). NULL or 1 = the original
+  // 100-points-per-answer scale; 2 = the recalibrated scale (÷10). Progress
+  // totals and bests count NULL/1 results as round(score / 10), without
+  // ever changing the row.
+  scoringVersion  Int?     @map("scoring_version") @db.SmallInt
 
   session  GameSession @relation(fields: [sessionId, userId, gameModeId], references: [id, userId, gameModeId], onDelete: Cascade, onUpdate: Cascade)
   user     User        @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)

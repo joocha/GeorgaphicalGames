@@ -124,6 +124,8 @@ test('first launch registers the player, profile and Telegram identity', async (
   assert.equal(res.body.player.isNew, true);
   assert.deepEqual(res.body.player.profile, { displayName: 'Nino B', avatarUrl: null, locale: 'ka' });
   assert.deepEqual(res.body.player.telegram, { id: '987654321', username: 'nino_b' });
+  // A new player starts at Level 1 with no score.
+  assert.deepEqual(res.body.player.progress, { totalScore: 0, gamesPlayed: 0, level: 1 });
   assert.deepEqual(res.body.bests.telegram_country_quiz.easy, { metric: 'score', best: null, plays: 0, lastPlayedAt: null });
   token = res.body.token;
   userId = res.body.player.id;
@@ -189,39 +191,46 @@ test('a played game is recorded with result, best and outbox event', async () =>
   assert.equal(start.body.session.roundsPerSession, 10);
   const sid = start.body.session.id;
 
-  // 3 correct answers can be worth 300..330 points, never 9999.
+  // v2.1.0 scale (Easy: 10 + min(5, streak - 1)): 3 correct answers are
+  // worth 30..33 points, never 9999 and never the old 310.
   const bad = await call('POST', `/sessions/${sid}/complete`, { token, body: { score: 9999, correctCount: 3, bestStreak: 2 } });
   assert.equal(bad.status, 422);
+  const oldScale = await call('POST', `/sessions/${sid}/complete`, { token, body: { score: 310, correctCount: 3, bestStreak: 2 } });
+  assert.equal(oldScale.status, 422);
 
   const done = await call('POST', `/sessions/${sid}/complete`, {
-    token, body: { score: 310, correctCount: 3, bestStreak: 2, details: { rounds: [] } },
+    token, body: { score: 31, correctCount: 3, bestStreak: 2, details: { rounds: [] } },
   });
   assert.equal(done.status, 201);
   assert.equal(done.body.result.totalRounds, 10);
   assert.equal(done.body.result.xpEarned, null);
-  assert.deepEqual(done.body.best, { metric: 'score', value: 310, previous: null, isNew: true });
+  assert.deepEqual(done.body.best, { metric: 'score', value: 31, previous: null, isNew: true });
+  assert.equal(done.body.result.scoringVersion, 2);
+  assert.deepEqual(done.body.player, { totalScore: 31, gamesPlayed: 1, level: 1 });
 
-  const again = await call('POST', `/sessions/${sid}/complete`, { token, body: { score: 310, correctCount: 3 } });
+  const again = await call('POST', `/sessions/${sid}/complete`, { token, body: { score: 31, correctCount: 3 } });
   assert.equal(again.status, 409);
 
   const event = await db.query(`SELECT event_type, status, payload FROM outbox_events WHERE event_type = 'game_result.recorded'`);
   assert.equal(event.rows.length, 1);
   assert.equal(event.rows[0].event_type, 'game_result.recorded');
   assert.equal(event.rows[0].payload.mode, 'easy');
-  assert.equal(event.rows[0].payload.score, 310);
-  // v2.0.0: Atlas Quest is Level 1 (1x); finishing it unlocks Level 2.
+  assert.equal(event.rows[0].payload.score, 31);
+  // Atlas Quest is Level 1 (1x). v2.1.0: Level 2 needs 1,000 lifetime points,
+  // so one game no longer unlocks it.
   assert.equal(event.rows[0].payload.level, 'atlas');
   assert.equal(event.rows[0].payload.scoreMultiplier, 1);
-  assert.equal(event.rows[0].payload.baseScore, 310);
-  assert.deepEqual(done.body.unlocked, [{ code: 'hydro', number: 2, name: 'Hydro Explorer' }]);
+  assert.equal(event.rows[0].payload.baseScore, 31);
+  assert.equal(event.rows[0].payload.scoringVersion, 2);
+  assert.deepEqual(done.body.unlocked, []);
   const unlocked = await db.query(`SELECT payload FROM outbox_events WHERE event_type = 'level.unlocked'`);
-  assert.equal(unlocked.rows.length, 1);
-  assert.equal(unlocked.rows[0].payload.level, 'hydro');
+  assert.equal(unlocked.rows.length, 0);
 
   // A lower score keeps the best.
   const s2 = (await call('POST', '/sessions', { token, body: { game: 'telegram_country_quiz', mode: 'easy' } })).body.session.id;
-  const lower = await call('POST', `/sessions/${s2}/complete`, { token, body: { score: 100, correctCount: 1, bestStreak: 1 } });
-  assert.deepEqual(lower.body.best, { metric: 'score', value: 310, previous: 310, isNew: false });
+  const lower = await call('POST', `/sessions/${s2}/complete`, { token, body: { score: 10, correctCount: 1, bestStreak: 1 } });
+  assert.deepEqual(lower.body.best, { metric: 'score', value: 31, previous: 31, isNew: false });
+  assert.deepEqual(lower.body.player, { totalScore: 41, gamesPlayed: 2, level: 1 });
 });
 
 test('leaving a game abandons the session', async () => {
@@ -248,8 +257,9 @@ test('/me returns profile and personal bests', async () => {
   const res = await call('GET', '/me', { token });
   assert.equal(res.status, 200);
   assert.equal(res.body.player.profile.displayName, 'Nina B');
+  assert.deepEqual(res.body.player.progress, { totalScore: 41, gamesPlayed: 2, level: 1 });
   const easy = res.body.bests.telegram_country_quiz.easy;
-  assert.equal(easy.best, 310);
+  assert.equal(easy.best, 31);
   assert.equal(easy.plays, 2);
   assert.equal(res.body.bests.telegram_country_quiz.hard.best, null);
 });

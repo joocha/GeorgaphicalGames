@@ -47,6 +47,7 @@ backend/src/
     players.js         Telegram login/registration, profile, personal bests
     sessions.js        start / answer / complete / abandon (both game kinds)
     levels.js          levels overview, unlock rules, completion, sticky unlocks
+    progression.js     lifetime score (old scale ÷10), user_profiles.level sync
     stats.js           player statistics
     internal.js        n8n: verified facts, AI question drafts
   engine/              pure logic, unit-tested, no I/O

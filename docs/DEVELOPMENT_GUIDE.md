@@ -112,6 +112,30 @@ Open the Mini App: five cards; existing players see Level 2 unlocked if they hav
 
 Rollback: deploy the v1.4.8 commit. Leave the schema in place (v1 ignores it); full schema rollback SQL is in [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md#rollback-of-20261117000000--20261117000100).
 
+### v2.1.0 deployment (manual steps, in this order)
+Migration `20261118000000_v2_1_score_progression` adds `user_profiles.level` and `game_results.scoring_version` and switches the catalog to the new scoring scale and score-threshold unlocks. Unlike v2.0.0, **the old API must not run on the migrated database**: v2.0.0 code would read the new rules without knowing the new scale. It would reject Level 1 games and record engine games with odd scores, permanently. So the API stays **stopped** from the migration until the new code is deployed (a few minutes of downtime). No content import is needed.
+```bash
+# On the server, as the deploy user, BEFORE v2.1.0 reaches main:
+set -a; . /home/projects/geographical-games/backend/.env; set +a        # DATABASE_URL
+pg_dump "$DATABASE_URL" -Fc -f ~/backup-before-v2.1.0-$(date +%F).dump   # 1. backup
+git clone --depth 1 --branch <v2.1.0 branch or tag> <repo URL> /tmp/geo-v21  # 2. separate checkout
+cd /tmp/geo-v21/backend && npm ci
+npm run db:status                                                         # 3. expect 1 pending: 20261118000000_*
+sudo systemctl stop geography-game-api                                    # 4. stop the v2.0.0 API
+npm run db:migrate:deploy                                                 # 5. migrate
+cd ~ && rm -rf /tmp/geo-v21
+```
+Then **immediately** merge v2.1.0 into `main`. The workflow deploys the code and starts the service. If the deploy can't happen right away, start the old API only after rolling the catalog back ([DATABASE_SCHEMA.md](DATABASE_SCHEMA.md#rollback-of-20261118000000)).
+
+Verify after deploy:
+```bash
+curl -s http://127.0.0.1:3020/api/health
+psql "$DATABASE_URL" -c "SELECT number, unlock_rule FROM game_levels ORDER BY number"          # total_score 1000/3000/6000/10000
+psql "$DATABASE_URL" -c "SELECT code, config->'scoring' FROM game_modes WHERE level_id IS NOT NULL ORDER BY sort_order"
+psql "$DATABASE_URL" -c "SELECT count(*) FILTER (WHERE scoring_version IS NULL) AS legacy, count(*) AS total FROM game_results"
+```
+Open the Mini App: the home screen shows `Name (Score: … | Level: …)`. Existing players keep every level they had unlocked; their old scores appear ÷10. Players who still have the old page open get "Couldn't save this game" once (old-scale score rejected); reopening the Mini App fixes it.
+
 ## Troubleshooting
 
 | Symptom | Cause / fix |

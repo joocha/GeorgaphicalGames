@@ -31,8 +31,8 @@ I mapped the catalog from the shipped code: `index.html`, generated from `tools/
 | Round | 10 rounds that alternate **Find it** (tap the country on a zoomed map) and **Name it** (pick the highlighted country from 4 options), starting with Find it |
 | Easy | The 75 largest countries. Wrong answers are drawn from the 4 nearest countries, with a wider zoom. |
 | Hard | All quiz countries, with 6 nearest countries as distractors and a tighter zoom |
-| Scoring | A correct answer scores `100 + min(50, (streak − 1) × 10)`. A wrong answer scores 0 and resets the streak. The maximum is **1350**. |
-| "Best" | Highest **points** per level, stored in Telegram CloudStorage (`best_easy`, `best_hard`) or in localStorage |
+| Scoring | Until v2.1.0: a correct answer scores `100 + min(50, (streak − 1) × 10)`, wrong = 0 and resets the streak, max **1350** (both modes). Since v2.1.0: Easy `10 + min(5, streak − 1)` (max 135), Hard `20 + min(10, 2 × (streak − 1))` (max 270). See `docs/SCORING_AND_PROGRESSION.md`. |
+| "Best" | Highest **points** per level, stored in Telegram CloudStorage or localStorage: `best_easy`, `best_hard` until v2.1.0; `best2_easy`, `best2_hard` since (old values ÷10) |
 | Other | Best streak, plus a result message based on correct answers (9+, 7+, 5+, otherwise) |
 
 ### Web Game: `games.code = 'web_expeditions'`

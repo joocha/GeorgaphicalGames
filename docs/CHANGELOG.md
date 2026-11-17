@@ -2,6 +2,51 @@
 
 All notable changes. Versions follow [Semantic Versioning](https://semver.org/). Releases up to v1.4.8 were tagged by commit message only; their entries below are reconstructed from git history.
 
+## [2.1.0] – 2026-11-18 (prepared; not yet deployed)
+
+Recalibrated scoring and score-threshold progression. Requires a manual migration with the API stopped.
+
+### New features
+- **Lifetime score unlocking:** Level 2 at 1,000, Level 3 at 3,000, Level 4 at 6,000, Level 5 at 10,000 points (Level 6 at 15,000, documented for when it exists). Checked after every completed game in the same transaction; new unlock rule type `total_score`.
+- **Player level** stored in `user_profiles.level` (highest contiguous unlocked level). Persistent across devices, never lowered (trigger), raised at login, on `/levels` and after every game.
+- **Name line** on the home screen: `Ana (Score: 1,095 | Level: 2)`, refreshed after every game.
+- Locked cards show threshold progress (`🔒 1,095 / 3,000 points` and a bar). The rule text on intro screens comes from the server rules.
+
+### Modified functionality
+- **Points ÷10:** Level 1 Easy `10 + min(5, streak − 1)` (max 135, was 1,350). Levels 2–5: base points ×0.1 (`pointScale`), streak bonus up to 5.
+- **Level 1 Hard = 2× Easy:** `20 + min(10, 2 × (streak − 1))`, max 270. The requested "920 → 460" referred to a maximum that never existed (Hard's maximum was 1,350, the same as Easy). The owner chose 2× Normal.
+- Level multipliers unchanged (×1–×5, ×N), applied after the base score, for the level the game is played in.
+- Results recorded before v2.1.0 are **counted ÷10** in totals and bests (never rewritten).
+- Level 1 results are validated against the rules **snapshotted** at session start (before: the mode's current rules), so a rule change never rejects a running game.
+- Unlocks granted earlier by the completion rule stay.
+- Device bests moved to `best2_easy`/`best2_hard` (old values ÷10).
+
+### Database changes
+- Migration `20261118000000_v2_1_score_progression`: `user_profiles.level INTEGER NOT NULL DEFAULT 1` (CHECK ≥ 1, trigger `user_profiles_level_never_decreases`), `game_results.scoring_version SMALLINT NULL` (CHECK ≥ 1). Catalog updates: `game_modes.config.scoring` of Telegram easy/hard and the four engine modes; `game_levels.unlock_rule` of levels 2–5 (only rows still holding the seeded v2.0.0 values).
+- No player row updated; historical results byte-identical (tested from v1 and from v2.0.0).
+
+### API changes (additive)
+- `player.progress {totalScore, gamesPlayed, level}` in `POST /auth/telegram` and `GET /me`; `player` in `GET /levels` and `POST /sessions/:id/complete`.
+- `GET /levels`: `modes[].points`, `unlockProgress`. `POST /sessions`: `session.scoring.points`; question `basePoints` on the session scale (10).
+- `complete`: `result.scoringVersion`; outbox `game_result.recorded` payload gains `scoringVersion`.
+- `GET /me/stats`: `totals.totalScore` (current scale), `totals.level`. `totalPoints` stays as the raw sum.
+- Point values in responses are 10× smaller; mode bests are reported on the current scale.
+
+### Bug fixes
+- None found (no defects in the audited v2.0.0 code).
+
+### Tests
+`npm test`: **78 passing** (13 API, 21 scoring/validation unit, 12 content, 32 levels end to end). New: Easy = original ÷10, Hard = 2× Easy, legacy snapshots, normalization, thresholds at exactly 1,000 / 3,000 (unit and end to end), 6,000 and 10,000 end to end, new player at Level 1, repeated submissions add nothing, per-user aggregation and isolation, level never lowered (trigger and deleted results), out-of-order admin grant, upgrade from v2.0 (unlocks kept, open session finished on old rules, counted ÷10). `npm run content:check` OK. Browser check: headless Chromium, stubbed Telegram SDK, local API on PGlite. Name line, threshold progress, a perfect Easy game (+10 … +15 = 135), Level 2 unlocking at 1,095, `user_profiles.level` = 2, device best 1,110 → 111, no page errors.
+
+### Deployment
+Manual migration **with the API stopped**, then merge immediately: see [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md#v210-deployment-manual-steps-in-this-order). No content import.
+
+### Known issues
+- Players who reach Level 2 only through history from before v2.1.0 need 10× more play than before (by design of the ÷10 normalization).
+- A Mini App page loaded before the deploy submits old-scale scores and gets "Couldn't save this game" once.
+- `totalPoints` in `/me/stats` mixes scales for players with older results; use `totalScore`.
+- Level 1 score is still validated (bounds), not computed, by the server.
+
 ## [2.0.0] – 2026-11-17 (prepared; not yet deployed)
 
 The five-level GeoAIGames platform. Atlas Quest becomes Level 1. All v1 API shapes still work; the major version marks the new product structure and the required manual migration.

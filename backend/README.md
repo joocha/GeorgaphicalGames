@@ -45,7 +45,7 @@ Inside Telegram the game needs a successful sign-in. If it fails, the app shows 
 | `POST /api/auth/telegram` | none | `{initData, platform?, version?}` | `201` (new player) or `200`: `{token, expiresAt, player:{id, isNew, profile, telegram}, bests}` |
 | `GET /api/me?game=<code>` | Bearer | | `{player:{id, profile}, bests:{<game>:{<mode>:{metric, best, plays, lastPlayedAt}}}}` |
 | `POST /api/sessions` | Bearer | `{game, mode, clientPlatform}` | `201` `{session:{id, status, startedAt, roundsPerSession, ...}, abandonedSessions}` |
-| `POST /api/sessions/:id/complete` | Bearer | `{score, correctCount, bestStreak?, stars?, details?}` | `201` `{result, best:{metric, value, previous, isNew}}` |
+| `POST /api/sessions/:id/complete` | Bearer | `{score, correctCount, bestStreak?, stars?, details?}` | `201` `{result, player:{totalScore, gamesPlayed, level}, best:{metric, value, previous, isNew}}` (score on the session's scale: Easy 10/answer, Hard 20) |
 | `POST /api/sessions/:id/abandon` | Bearer | | `204` |
 
 Errors are `{error, code}`: `400/422` bad input or an impossible result, `401` invalid `initData` or token (code `invalid_init_data` or `unauthorized`), or genuine but expired `initData` (code `init_data_expired`), `404` unknown session or mode, `409` session already finished, `503` the database or login isn't configured. `total_rounds`, `duration_ms` and `xp_earned` are set by the server, never by the client.

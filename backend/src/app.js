@@ -6,6 +6,7 @@ import { HttpError } from './http-error.js';
 import { loginTelegramPlayer, getProfile, getPersonalBests } from './services/players.js';
 import { startSession, completeSession, abandonSession, submitAnswer } from './services/sessions.js';
 import { getLevelsOverview } from './services/levels.js';
+import { playerSummary } from './services/progression.js';
 import { getPlayerStats } from './services/stats.js';
 import { getObjectFacts, createQuestionDraft } from './services/internal.js';
 import { withTransaction } from './db.js';
@@ -98,6 +99,9 @@ export function createApp({ config, pool }) {
     const player = await loginTelegramPlayer(pool, launch, { platform, version });
     const { token, expiresAt } = issueToken(player.userId, config.sessionSecret, config.sessionTtl);
     const bests = await getPersonalBests(pool, player.userId, TELEGRAM_GAME);
+    // Brings user_profiles.level up to date (existing players after the
+    // v2.1.0 upgrade, rule changes) and returns score + level for the name.
+    const { player: progress } = await withTransaction(pool, (db) => getLevelsOverview(db, player.userId));
 
     res.status(player.isNew ? 201 : 200).json({
       token,
@@ -107,6 +111,7 @@ export function createApp({ config, pool }) {
         isNew: player.isNew,
         profile: player.profile,
         telegram: player.telegram,
+        progress,
       },
       bests: { [TELEGRAM_GAME]: bests },
     });
@@ -116,11 +121,12 @@ export function createApp({ config, pool }) {
   // the Telegram Mini App's).
   api.get('/me', authed, async (req, res) => {
     const game = typeof req.query.game === 'string' ? req.query.game : TELEGRAM_GAME;
-    const [profile, bests] = await Promise.all([
+    const [profile, bests, progress] = await Promise.all([
       getProfile(pool, req.userId),
       getPersonalBests(pool, req.userId, game),
+      playerSummary(pool, req.userId),
     ]);
-    res.json({ player: { id: req.userId, profile }, bests: { [game]: bests } });
+    res.json({ player: { id: req.userId, profile, progress }, bests: { [game]: bests } });
   });
 
   // Statistics: totals, per level, per category (all derived from history).
@@ -130,8 +136,9 @@ export function createApp({ config, pool }) {
 
   // --- levels --------------------------------------------------------------
 
-  // The five levels with the player's progress, unlock state and bests.
-  // Runs in a transaction because it records newly met unlock rules.
+  // The five levels with the player's progress, unlock state and bests, plus
+  // the player's lifetime score and level. Runs in a transaction because it
+  // records newly met unlock rules and raises user_profiles.level.
   api.get('/levels', authed, async (req, res) => {
     res.json(await withTransaction(pool, (db) => getLevelsOverview(db, req.userId)));
   });

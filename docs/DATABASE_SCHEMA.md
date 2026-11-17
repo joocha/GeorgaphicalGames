@@ -10,6 +10,7 @@ PostgreSQL 13+ (uses the built-in `gen_random_uuid()`). Prisma owns the schema (
 | `20261111000100_seed_game_catalog` | v1.4 | Games `telegram_country_quiz`, `web_expeditions` and their 7 modes |
 | `20261117000000_v2_levels_question_engine` | v2.0.0 | **Additive:** 10 new tables, nullable columns on `game_modes`, `game_sessions`, `game_results`; CHECKs; triggers `game_answers_answer_once`, `game_sessions_scoring_is_final` |
 | `20261117000100_seed_levels` | v2.0.0 | 5 `game_levels`; attaches the Telegram easy/hard modes to Level 1 (catalog rows only); game `explorer_levels` with modes `hydro`, `earth`, `resources`, `master` |
+| `20261118000000_v2_1_score_progression` | v2.1.0 | **Additive for player data:** `user_profiles.level` (NOT NULL DEFAULT 1, CHECK ≥ 1, trigger `user_profiles_level_never_decreases`), `game_results.scoring_version` (nullable SMALLINT); catalog: recalibrated `game_modes.config.scoring` (Level 1 Easy/Hard, levels 2–5) and `total_score` unlock rules on levels 2–5 |
 
 Questions and geographic knowledge are **not** in migrations; they are imported from `backend/content/` ([GEOGRAPHIC_DATA_SOURCES.md](GEOGRAPHIC_DATA_SOURCES.md)).
 
@@ -18,6 +19,29 @@ Questions and geographic knowledge are **not** in migrations; they are imported 
 - New CHECKs on existing tables only constrain the new columns (`... IS NULL OR ...`), so every existing row satisfies them.
 - The seed migration updates only `game_modes.level_id` of the two Telegram catalog rows, and only where it is NULL.
 - Verified by the test "upgrade from v1 keeps history exactly": v1 migrations plus a v1 result, then the v2 migrations; the result row is byte-identical, and the player has Level 1 completed and Level 2 open.
+
+### Why the v2.1 migration is safe for production data
+- Two `ADD COLUMN`s. `user_profiles.level` is NOT NULL with a **constant** default, which PostgreSQL 11+ adds without rewriting the table. This deliberately departs from the "nullable column" convention, because every player has a level. `game_results.scoring_version` is nullable.
+- No player row is updated. `game_results` keeps its exact values, and `scoring_version` stays NULL on every existing row (meaning the original scale, normalized ÷10 on read only).
+- Catalog `UPDATE`s touch only rows that still hold the seeded v2.0.0 values (`correctBase = 100`, `streakBonusPerStep = 10`, `level_completed` rules), so a manual tuning is never overwritten.
+- Verified by "upgrade from v2.0 keeps unlocks and history": v2.0 migrations, a v2.0 result, a sticky unlock and an open session, then the v2.1 migration. Results are byte-identical, Level 2 stays unlocked, and the open session completes on its original rules.
+
+### Rollback of `20261118000000`
+Roll back the code to v2.0.0 first; v2.0.0 ignores both new columns. The catalog rules must go back too, because v2.0.0 code doesn't know `pointScale` or `total_score`. Run after `pg_dump`:
+```sql
+BEGIN;
+UPDATE game_modes gm SET config = jsonb_set(config, '{scoring}', '{"correctBase":100,"streakBonusPerStep":10,"streakBonusCap":50,"wrong":0,"maxScore":1350}')
+  FROM games g WHERE g.id = gm.game_id AND g.code = 'telegram_country_quiz' AND gm.code IN ('easy','hard');
+UPDATE game_modes gm SET config = jsonb_set(config, '{scoring}', (config->'scoring') - 'pointScale' || '{"streakBonusPerStep":10,"streakBonusCap":50}')
+  FROM games g WHERE g.id = gm.game_id AND g.code = 'explorer_levels';
+UPDATE game_levels SET unlock_rule = jsonb_build_object('type','level_completed','level', number - 1) WHERE number BETWEEN 2 AND 5;
+-- Optional; the columns are harmless to v2.0.0:
+-- DROP TRIGGER user_profiles_level_never_decreases ON user_profiles; DROP FUNCTION user_profiles_level_never_decreases();
+-- ALTER TABLE user_profiles DROP COLUMN level; ALTER TABLE game_results DROP COLUMN scoring_version;
+-- DELETE FROM _prisma_migrations WHERE migration_name = '20261118000000_v2_1_score_progression';
+COMMIT;
+```
+Results recorded on the v2.1 scale stay in `game_results` with their small scores. v2.0.0 code would count them as they are (×1 of the old scale).
 
 ### Rollback of `20261117000000` / `20261117000100`
 The application code of v2 needs these tables, so roll back the code first (deploy the v1.4.8 commit). The v1 code ignores the new columns and tables, so **leaving the schema in place is the recommended rollback**. Only if the schema itself must go (after `pg_dump`!). Tested on PGlite on 2026-11-17:
@@ -95,13 +119,15 @@ Spec fields: `id, code (UK), level_id, category, subcategory, question_type, ans
 
 Every knowledge row has a `verification_status`. The importer never deletes: facts removed from the content files are marked `rejected` with a dated note.
 
-## Columns added to v1 tables (all nullable)
+## Columns added to v1 tables
 
 | Table | Column | Meaning |
 |---|---|---|
 | `game_modes` | `level_id` | the level this mode belongs to (NULL for the Web Game) |
 | `game_sessions` | `level_id`, `score_multiplier`, `scoring_rules jsonb`, `rounds_planned` | scoring snapshot taken at start; immutable afterwards (trigger `game_sessions_scoring_is_final`); NULL on pre-v2 sessions |
 | `game_results` | `base_score`, `score_multiplier` | `score = round(base_score × score_multiplier)`; both NULL on pre-v2 results (CHECK: both or neither) |
+| `game_results` | `scoring_version` (v2.1, nullable) | scale of `score`: NULL/1 = original (counted ÷10 in totals and bests), 2 = v2.1 scale. Copied from `game_sessions.scoring_rules.version` |
+| `user_profiles` | `level` (v2.1, NOT NULL DEFAULT 1) | highest N with levels 1..N unlocked; raised by the backend, never lowered (trigger). Total score is **not** stored; it is `SUM` over `game_results` |
 
 ## Indexes (v2)
 `game_levels_number_key`, `game_levels_code_key`; `game_modes_level_id_idx`; `game_sessions_level_id_idx`; `game_answers_session_id_round_index_key` (**one answer per round**), `game_answers_question_id_idx`; `question_bank_code_key`, `question_bank_level_id_verification_status_is_active_idx`, `question_bank_map_object_id_idx`, `question_bank_data_source_id_idx`; `user_level_unlocks_level_id_idx`; `geo_objects_code_key`, `geo_objects_object_type_idx`, `geo_objects_data_source_id_idx`; `geo_object_countries_country_id_idx`, `…_data_source_id_idx`; `geo_object_links_related_object_id_idx`, `…_data_source_id_idx`; `countries_code_key`, `countries_name_key`; `country_resource_stats_…_key` (natural key), `country_resource_stats_resource_object_id_metric_data_year_idx`, `…_data_source_id_idx`; `data_sources_code_key`. Every foreign key has an index starting with its columns.
@@ -123,3 +149,5 @@ Facts are explicit, sourced relations, not computed geometry: "the Danube flows 
 ## Decisions
 - **2026-11-17: one unified `geo_objects` table instead of one table per object kind** (`rivers`, `lakes`, `straits`, ...). Every kind shares the same columns (name, location, source, verification), and kind-specific facts fit in `properties` and in typed relations. New kinds need no migration. Revisit if a kind needs many queried, typed columns.
 - **2026-11-17: `user_level_unlocks` stores unlocks, not progress.** Progress (plays, best, completion, mastery) is always derived from immutable `game_results` and `game_answers`, so it can't drift. Unlocks are stored because they must survive rule changes.
+- **2026-11-18: `user_profiles.level` added; total score stays derived.** *Previous:* no stored level; unlocks only in `user_level_unlocks`. *New:* `user_profiles.level` stores the highest contiguous unlocked level (owner request), kept in sync in the transaction that records a result, and never lowered. The lifetime score is still computed (`SUM` over `game_results`, older scale ÷10) and not stored, and there is still no separate scoring table. *Reason:* a persistent, cross-device level that the UI can show cheaply. *Migration:* `20261118000000`; existing profiles start at 1 and catch up from their unlocks at the next login.
+- **2026-11-18: `game_results.scoring_version` instead of rescaling history.** *Previous:* one scale; `score` was comparable across all results. *New:* v2.1.0 divided points by 10. Old rows keep their score, and readers normalize with `progressScoreSql()`. *Reason:* `game_results` is append-only and must never be rewritten. *Migration:* nullable column, NULL on all existing rows.

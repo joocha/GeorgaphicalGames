@@ -36,12 +36,18 @@ export async function getPlayerStats(db, userId) {
       ORDER BY l.number, q.category`,
     [userId],
   );
-  const { levels } = await getLevelsOverview(db, userId);
+  const { levels, player } = await getLevelsOverview(db, userId);
 
   const answered = totals.correct_answers + totals.incorrect_answers;
   return {
     totals: {
       gamesPlayed: totals.games_played,
+      // Lifetime score on the current scale (older results ÷10): the value
+      // shown next to the player's name and used for unlock thresholds.
+      totalScore: player.totalScore,
+      level: player.level,
+      // Raw sum of game_results.score as stored (mixes old and new scale);
+      // kept for compatibility.
       totalPoints: Number(totals.total_points),
       correctAnswers: totals.correct_answers,
       incorrectAnswers: totals.incorrect_answers,
