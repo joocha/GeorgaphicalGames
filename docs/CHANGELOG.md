@@ -15,6 +15,11 @@ Hydro Explorer content batch 2. Content only: no code, schema or API change.
 - New relations: `lake_chad.shared_by` (Nigeria, Niger, Chad, Cameroon), `lake_malawi.shared_by` (Malawi, Mozambique, Tanzania), `ganges.flows_through` (India, Bangladesh).
 - Verification method and source disagreements: [GEOGRAPHIC_DATA_SOURCES.md](GEOGRAPHIC_DATA_SOURCES.md#verification).
 
+### Tooling
+- `backend/prisma/checks/health_check.sql`: read-only production health report (migrations, columns, triggers, level rules, scoring rules, questions per level, knowledge objects, player info), each failure naming its fix. Tested on PGlite in four states: healthy, no content, still on v2.0, and empty.
+- `backend/scripts/repair.sh`: backup, then migrations from a clone of the deployed commit (API stopped only when migrations are pending), then content import, restart and a second health check. `--check` runs the health check only. Prisma status parsing was tested against real `prisma migrate status/deploy` output.
+- Found during this release: production had never had `npm run content:import` run, so levels 2–5 couldn't start (`409 no_questions`). Fixed on the server on 2026-11-18 (168 questions imported).
+
 ### Database / API changes
 None. The questions reach the database through `npm run content:import`.
 

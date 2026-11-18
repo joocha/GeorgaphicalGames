@@ -136,6 +136,30 @@ psql "$DATABASE_URL" -c "SELECT count(*) FILTER (WHERE scoring_version IS NULL) 
 ```
 Open the Mini App: the home screen shows `Name (Score: … | Level: …)`. Existing players keep every level they had unlocked; their old scores appear ÷10. Players who still have the old page open get "Couldn't save this game" once (old-scale score rejected); reopening the Mini App fixes it.
 
+## Health check and repair
+
+**Check (read-only, safe any time):**
+```bash
+cd /home/projects/geographical-games
+bash backend/scripts/repair.sh --check
+# or directly:  psql "$DATABASE_URL" -f backend/prisma/checks/health_check.sql
+```
+This prints one row per check (`OK` / `FAIL` / `INFO`) and a `SUMMARY`: migrations applied, the columns and triggers the code needs, the five levels with their multipliers and unlock rules, the scoring rules, verified questions per level (a game needs 10), knowledge objects, and some player information. Every `FAIL` names its fix. It also works on a half-migrated or empty database. It runs in a `READ ONLY` transaction and writes nothing.
+
+**Repair (database + reload):**
+```bash
+bash backend/scripts/repair.sh          # asks before changing anything; --yes to skip the prompt
+```
+1. `pg_dump` backup to `~/backups/geo-<date>.dump` (always, before any change).
+2. A temporary clone of the **deployed** commit, taken from the live checkout, so the database is never migrated ahead of the running code. The live checkout has no Prisma CLI (`npm ci --omit=dev`), which is why the clone is needed.
+3. Pending migrations: stop the API, then `prisma migrate deploy`. A failed migration, or a status it can't read, stops the script and leaves the database unchanged.
+4. `npm run content:import` (idempotent).
+5. Restart the service, wait for `/api/health`, run the health check again; exit 1 if anything still fails. If a step fails after the API was stopped, the API is started again.
+
+Why not a single SQL file: migrations must go through `prisma migrate deploy` so `_prisma_migrations` stays correct, and content import derives and validates answers in Node. So SQL is used only for checking.
+
+`prisma/checks/schema_checks.sql` is different: it tests constraints by inserting rows (then rolls back) and is meant for local or staging databases, never production.
+
 ## Troubleshooting
 
 | Symptom | Cause / fix |
@@ -147,6 +171,8 @@ Open the Mini App: the home screen shows `Name (Score: … | Level: …)`. Exist
 | Tests hang | a `before` hook failed and left PGlite open; run one file with `node --test --test-reporter=spec test/<file>` to see the error |
 | `node` fails with `Library not loaded: libsimdjson…` (macOS Homebrew) | Homebrew upgraded simdjson without rebuilding node: `brew reinstall node` |
 | `/api/internal/*` → 503 | `INTERNAL_API_TOKEN` unset or shorter than 32 characters |
+| Level 2–5 "Couldn't start the game" | no questions in the database (`409 no_questions`): `bash backend/scripts/repair.sh` (runs the content import) |
+| Anything unclear after a deploy | `bash backend/scripts/repair.sh --check` |
 
 ## Coding conventions
 See `CLAUDE.md`. In short: plain SQL with parameters; pure logic in `src/engine/`; additive migrations; codes not enums; backend decides scores and unlocks; every behaviour change comes with tests and docs.
