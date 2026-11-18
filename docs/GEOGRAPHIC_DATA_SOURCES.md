@@ -61,6 +61,14 @@ How the v2.0.0 sample set was verified (2026-11-17):
 
 The questions were written with AI assistance from these verified facts. **A human spot-check of the 80 seed questions is recommended** (`npm run questions -- list --status verified`).
 
+How Hydro batch 2 (v2.2.0, 88 questions, `questions/level-2-hydro-2.json`) was verified (2026-11-18):
+- Every claim in a question or explanation was matched against the current plain text of the English Wikipedia article on its subject (fetched through the MediaWiki API), quoting the supporting sentence. Claims without a matching sentence were dropped or reworded (e.g. "longest river in Asia" for the Yangtze was replaced by "longest river of China, third-longest in the world").
+- Questions about objects already in `geo-objects.json` derive their answers from it (`fact`), so they can't contradict it.
+- New objects: `congo_river`, `ganges`, `niger_river`, `lake_ladoga` (Wikidata QIDs from `wbgetentities`, geometry from the Natural Earth layer index). New relations: `lake_chad.shared_by`, `lake_malawi.shared_by`, `ganges.flows_through`.
+- Disagreements: Ganges, Wikidata P17 lists only India, Wikipedia India and Bangladesh (used 2, noted). Congo, sources disagree on countries, so no country-set question. Lake Malawi, the Malawi–Tanzania boundary on the lake is disputed, but all three countries border it (noted).
+- Depth figures are given as ranges or rounded ("about 11,000 m", "about 440 m below sea level") because measurements differ by source and year.
+- AI-assisted like the seed set: **spot-check before importing to production.**
+
 ## Data freshness
 
 | Data | As of | Refresh |

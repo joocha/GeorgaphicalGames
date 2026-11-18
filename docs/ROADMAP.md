@@ -17,6 +17,7 @@ Last updated: 2026-11-18 (v2.1.0 prepared, not yet deployed).
 | **Question engine: 9 types, 4 answer modes, partial scoring, explanations, duplicate prevention, recent-question avoidance** | v2.0.0 |
 | **Geographic knowledge base with provenance; content pipeline (check/import)** | v2.0.0 |
 | **Verified sample content: 22 / 20 / 20 / 18 questions for levels 2–5** | v2.0.0 |
+| **Hydro content batch 2: +88 questions (currents, depths, oceans, connections); Hydro now 110** | v2.2.0 |
 | **Interactive map: pan/zoom, lazy river/lake layers, markers, multi-select, reveal** | v2.0.0 |
 | **Per-level bests and progress, statistics endpoint** | v2.0.0 |
 | **n8n internal API (verified facts, AI drafts) and review CLI** | v2.0.0 |
@@ -33,7 +34,7 @@ Phase A (platform foundation) and Phase B (question engine) are complete. Phases
 1. **Deploy v2.1.0** (migration with the API stopped) following [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md#v210-deployment-manual-steps-in-this-order); if v2.0.0 isn't live yet, do its steps first. Spot-check the 80 seed questions.
 2. **Statistics UI**: a profile screen using `GET /me/stats` (backend exists, no screen yet).
 3. **Outbox dispatcher** to n8n (design in `backend/docs/database.md` §7); then the draft-generation workflow using `/internal/geo-objects` and `/internal/question-drafts`.
-4. **More content per level** (target ≥ 60 verified questions each) so repeats become rare.
+4. **More content per level** (target ≥ 60 verified questions each) so repeats become rare. Hydro: done (110). Earth, Resources, Master: still 20 / 20 / 18.
 5. **Level 1 neighbour and border questions** through the engine (country-neighbour data already exists in `map-countries.json`).
 
 ## Planned features

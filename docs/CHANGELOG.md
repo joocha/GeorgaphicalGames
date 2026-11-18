@@ -2,6 +2,31 @@
 
 All notable changes. Versions follow [Semantic Versioning](https://semver.org/). Releases up to v1.4.8 were tagged by commit message only; their entries below are reconstructed from git history.
 
+## [2.2.0] – 2026-11-18 (prepared; not yet imported)
+
+Hydro Explorer content batch 2. Content only: no code, schema or API change.
+
+### New features
+- **88 new Hydro questions** (`backend/content/questions/level-2-hydro-2.json`). Hydro goes from 22 to **110** verified questions, so repeats become rare. Coverage: oceans (19, including currents and trench depths), lakes (19), rivers (19), straits (15), waterfalls (7), seas (6), canals (3). All 7 question types are used; difficulty 1/2/3 = 18/51/19.
+- Currents and depths are filed under the existing `oceans` / `lakes` / `rivers` categories. A dedicated "Currents" chip on the intro screen would need a `game_levels.categories` change (SQL or migration).
+
+### Knowledge base
+- New verified objects: `congo_river`, `ganges`, `niger_river`, `lake_ladoga` (map geometry from the existing Natural Earth layers).
+- New relations: `lake_chad.shared_by` (Nigeria, Niger, Chad, Cameroon), `lake_malawi.shared_by` (Malawi, Mozambique, Tanzania), `ganges.flows_through` (India, Bangladesh).
+- Verification method and source disagreements: [GEOGRAPHIC_DATA_SOURCES.md](GEOGRAPHIC_DATA_SOURCES.md#verification).
+
+### Database / API changes
+None. The questions reach the database through `npm run content:import`.
+
+### Tests
+`npm test`: 78 passing. `npm run content:check`: OK (95 objects, 139 relations, 168 questions; hydro 110). All 24 new map-highlight questions resolve to a map feature or point.
+
+### Deployment
+After review: on the server, from a temporary clone of `main`, `npm run content:import` (idempotent; inserts 88 questions and 4 objects, changes nothing else). No restart, no migration.
+
+### Known issues
+- AI-assisted content: a human spot-check is recommended before importing to production.
+
 ## [2.1.0] – 2026-11-18 (prepared; not yet deployed)
 
 Recalibrated scoring and score-threshold progression. Requires a manual migration with the API stopped.

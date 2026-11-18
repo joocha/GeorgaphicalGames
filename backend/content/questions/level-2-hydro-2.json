@@ -1,0 +1,788 @@
+{
+  "level": "hydro",
+  "status": "verified",
+  "reviewedBy": "content:2026-11-18",
+  "reviewNote": "Hydro batch 2 (88 questions: rivers, lakes, oceans, currents, depths, seas, straits, canals, waterfalls and their connections). Every fact was checked on 2026-11-18 against the current text of the English Wikipedia article on its subject (or against geo-objects.json, whose answers the validator derives); sources disagreeing were noted in geo-objects.json. AI-assisted build: a human spot-check is recommended before importing to production.",
+  "questions": [
+    {
+      "code": "hydro.ocean.largest", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which is the largest and deepest ocean on Earth?",
+      "object": "pacific_ocean",
+      "options": ["Pacific Ocean", "Atlantic Ocean", "Indian Ocean", "Arctic Ocean"],
+      "correct": ["Pacific Ocean"],
+      "explanation": "The Pacific Ocean is the largest and deepest of Earth's five oceanic divisions.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.ocean.smallest", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which is the smallest and shallowest of the five oceans?",
+      "options": ["Arctic Ocean", "Southern Ocean", "Indian Ocean", "Atlantic Ocean"],
+      "correct": ["Arctic Ocean"],
+      "explanation": "The Arctic Ocean is the smallest and shallowest of the world's five oceanic divisions.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.ocean.second_largest", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which ocean is the second largest, after the Pacific?",
+      "object": "atlantic_ocean",
+      "options": ["Atlantic Ocean", "Indian Ocean", "Southern Ocean", "Arctic Ocean"],
+      "correct": ["Atlantic Ocean"],
+      "explanation": "The Atlantic Ocean is the second largest of the five oceans, covering about 85 million km².",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.ocean.southern.antarctica", "category": "oceans", "type": "TRUE_FALSE", "difficulty": 1,
+      "text": "True or false: the Southern Ocean encircles Antarctica.",
+      "correct": ["True"],
+      "explanation": "True. The Southern Ocean comprises the southernmost waters of the World Ocean, generally taken to be south of 60° S, encircling Antarctica.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.ocean.mariana", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "The Mariana Trench, the deepest oceanic trench on Earth, is in which ocean?",
+      "object": "pacific_ocean",
+      "options": ["Pacific Ocean", "Atlantic Ocean", "Indian Ocean", "Southern Ocean"],
+      "correct": ["Pacific Ocean"],
+      "explanation": "The Mariana Trench is in the western Pacific Ocean, about 200 km east of the Mariana Islands.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.ocean.challenger_deep.depth", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "The Challenger Deep in the Mariana Trench is the deepest known point of the ocean floor. About how deep is it?",
+      "options": ["About 11,000 m", "About 8,500 m", "About 6,000 m", "About 4,000 m"],
+      "correct": ["About 11,000 m"],
+      "explanation": "Measurements of the Challenger Deep range from about 10,903 to 11,009 m below sea level: roughly 11,000 m.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.ocean.deepest_points", "category": "oceans", "type": "MATCHING", "difficulty": 3,
+      "text": "Match each ocean with the trench that holds its deepest point.",
+      "options": { "left": ["Pacific Ocean", "Atlantic Ocean", "Indian Ocean"], "right": ["Mariana Trench", "Puerto Rico Trench", "Sunda Trench"] },
+      "correct": [["Pacific Ocean", "Mariana Trench"], ["Atlantic Ocean", "Puerto Rico Trench"], ["Indian Ocean", "Sunda Trench"]],
+      "explanation": "The Pacific's deepest point is in the Mariana Trench (Challenger Deep, about 11,000 m), the Atlantic's in the Puerto Rico Trench (about 8,400–8,700 m) and the Indian Ocean's in the Sunda Trench.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.gulf_stream.warm", "category": "oceans", "type": "TRUE_FALSE", "difficulty": 1,
+      "text": "True or false: the Gulf Stream is a cold ocean current.",
+      "correct": ["False"],
+      "explanation": "False. The Gulf Stream is a warm, swift Atlantic current. It starts in the Gulf of Mexico, flows through the Straits of Florida and up the US east coast, then heads towards northwest Europe as the North Atlantic Current.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.gulf_stream.origin", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Where does the warm Gulf Stream originate?",
+      "object": "gulf_of_mexico",
+      "options": ["Gulf of Mexico", "Gulf of California", "Gulf of Aden", "North Sea"],
+      "correct": ["Gulf of Mexico"],
+      "explanation": "The Gulf Stream originates in the Gulf of Mexico and flows through the Straits of Florida into the Atlantic.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.north_atlantic", "category": "oceans", "type": "TRUE_FALSE", "difficulty": 2,
+      "text": "True or false: the North Atlantic Current (North Atlantic Drift) is a warm current that carries the Gulf Stream on towards Europe.",
+      "correct": ["True"],
+      "explanation": "True. The North Atlantic Current is a powerful warm current that extends the Gulf Stream northeastward across the Atlantic.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.humboldt.coast", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "The cold Humboldt Current, also called the Peru Current, flows north along the west coast of which continent?",
+      "options": ["South America", "Africa", "Australia", "North America"],
+      "correct": ["South America"],
+      "explanation": "The Humboldt Current is a cold, low-salinity current that flows north along the western coast of South America.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.oceans", "category": "oceans", "type": "MATCHING", "difficulty": 2,
+      "text": "Match each ocean current with its ocean.",
+      "options": { "left": ["Gulf Stream", "Kuroshio Current", "Agulhas Current", "Antarctic Circumpolar Current"], "right": ["Atlantic Ocean", "Pacific Ocean", "Indian Ocean", "Southern Ocean"] },
+      "correct": [["Gulf Stream", "Atlantic Ocean"], ["Kuroshio Current", "Pacific Ocean"], ["Agulhas Current", "Indian Ocean"], ["Antarctic Circumpolar Current", "Southern Ocean"]],
+      "explanation": "The Gulf Stream is an Atlantic current, the Kuroshio flows in the North Pacific, the Agulhas Current runs along the southwest Indian Ocean, and the Antarctic Circumpolar Current is the dominant current of the Southern Ocean.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.acc.largest", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which is the largest ocean current on Earth?",
+      "options": ["Antarctic Circumpolar Current", "Gulf Stream", "Kuroshio Current", "Canary Current"],
+      "correct": ["Antarctic Circumpolar Current"],
+      "explanation": "The Antarctic Circumpolar Current, the dominant current of the Southern Ocean, carries about 137 million m³ of water per second, making it the largest ocean current.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.acc.direction", "category": "oceans", "type": "TRUE_FALSE", "difficulty": 3,
+      "text": "True or false: the Antarctic Circumpolar Current flows from west to east around Antarctica.",
+      "correct": ["True"],
+      "explanation": "True. It flows from west to east around Antarctica (clockwise as seen from the South Pole).",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.cold", "category": "oceans", "type": "MULTIPLE_CHOICE", "difficulty": 3,
+      "text": "Select the three cold ocean currents.",
+      "options": ["Humboldt Current", "California Current", "Labrador Current", "Gulf Stream", "Kuroshio Current", "North Atlantic Current"],
+      "correct": ["Humboldt Current", "California Current", "Labrador Current"],
+      "explanation": "The Humboldt (along western South America), California (along western North America) and Labrador (from the Arctic past Newfoundland) currents are cold. The Gulf Stream, Kuroshio and North Atlantic currents are warm.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.kuroshio.country", "category": "oceans", "type": "MAP_IDENTIFICATION", "difficulty": 2,
+      "text": "The warm Kuroshio Current is also called the Japan Current. Tap the country it flows past.",
+      "map": { "focus": { "area": [18, 110, 50, 160] } },
+      "correct": ["Japan"],
+      "explanation": "The Kuroshio flows north on the west side of the North Pacific. Off the east coast of Japan it meets the cold Oyashio Current and forms the North Pacific Current.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.benguela", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "The cold Benguela Current flows north along southwestern Africa. It forms the eastern part of which ocean's gyre?",
+      "options": ["South Atlantic", "Indian Ocean", "North Pacific", "Arctic Ocean"],
+      "correct": ["South Atlantic"],
+      "explanation": "The Benguela Current is the broad, northward flowing current that forms the eastern part of the South Atlantic gyre, fed by cold water welling up from the depths.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.canary", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "The Canary Current cools the coast of which region?",
+      "options": ["Northwest Africa", "East Asia", "Northern Australia", "The Caribbean"],
+      "correct": ["Northwest Africa"],
+      "explanation": "The Canary Current branches south from the North Atlantic Current and cools the coasts of the Canary Islands, Morocco and Western Sahara in northwest Africa.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.current.labrador", "category": "oceans", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "The cold Labrador Current flows south along the coast of Canada. From which ocean does it come?",
+      "options": ["Arctic Ocean", "Indian Ocean", "Southern Ocean", "Pacific Ocean"],
+      "correct": ["Arctic Ocean"],
+      "explanation": "The Labrador Current flows from the Arctic Ocean south along the coast of Labrador, around Newfoundland and down the east coast of Canada.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.tanganyika.second_deepest", "category": "lakes", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "After Lake Baikal, which is the world's second-deepest lake?",
+      "object": "lake_tanganyika",
+      "options": ["Lake Tanganyika", "Lake Superior", "Lake Victoria", "Lake Titicaca"],
+      "correct": ["Lake Tanganyika"],
+      "explanation": "Lake Tanganyika reaches 1,471 m, second only to Lake Baikal. It is also the second-largest freshwater lake by volume.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.dead_sea.lowest", "category": "lakes", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "The shores of which lake are the lowest land on Earth?",
+      "options": ["Dead Sea", "Caspian Sea", "Lake Baikal", "Lake Chad"],
+      "correct": ["Dead Sea"],
+      "explanation": "The surface of the Dead Sea lies about 440 m below sea level (439.78 m in 2025), so its shores are the lowest land-based elevation on Earth.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.dead_sea.salt", "category": "lakes", "type": "TRUE_FALSE", "difficulty": 2,
+      "text": "True or false: the Dead Sea is a freshwater lake.",
+      "correct": ["False"],
+      "explanation": "False. The Dead Sea is a landlocked salt lake, with a salinity of about 34%. At 304 m it is the deepest hypersaline lake in the world.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.baikal.freshwater_share", "category": "lakes", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "About what share of the world's fresh surface water does Lake Baikal hold?",
+      "object": "lake_baikal",
+      "options": ["About a fifth", "About half", "About 2%", "About 90%"],
+      "correct": ["About a fifth"],
+      "explanation": "Lake Baikal holds about 22–23% of the world's fresh surface water, more than all of North America's Great Lakes combined: roughly a fifth.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.baikal.oldest", "category": "lakes", "type": "TRUE_FALSE", "difficulty": 2,
+      "text": "True or false: Lake Baikal is also the oldest lake in the world.",
+      "object": "lake_baikal",
+      "correct": ["True"],
+      "explanation": "True. Lake Baikal is 25–30 million years old, the oldest lake on Earth, and one of the clearest.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.congo.deepest", "category": "rivers", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "Which is the world's deepest recorded river, with depths of about 220 m?",
+      "object": "congo_river",
+      "options": ["Congo", "Amazon", "Nile", "Mississippi"],
+      "correct": ["Congo"],
+      "explanation": "The Congo is the deepest recorded river, with measured depths of around 220 m.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.congo.equator", "category": "rivers", "type": "TRUE_FALSE", "difficulty": 2,
+      "text": "True or false: the Congo is the only major river that crosses the equator twice.",
+      "object": "congo_river",
+      "correct": ["True"],
+      "explanation": "True. The Congo crosses the equator twice. Because its basin lies on both sides of the equator, some part of it always has a rainy season, so its flow is steady.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.tanganyika.countries", "category": "lakes", "type": "GEO_RELATIONSHIP", "difficulty": 3,
+      "text": "Select the four countries that share Lake Tanganyika.",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "lake_tanganyika",
+      "map": { "focus": { "area": [-16, 20, 2, 40] } },
+      "fact": { "object": "lake_tanganyika", "countries": "shared_by" },
+      "explanation": "Lake Tanganyika is shared by Tanzania, DR Congo, Burundi and Zambia.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.lake.malawi.countries", "category": "lakes", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select the three countries that border Lake Malawi.",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "lake_malawi",
+      "map": { "focus": { "area": [-22, 26, -4, 44] } },
+      "fact": { "object": "lake_malawi", "countries": "shared_by" },
+      "explanation": "Lake Malawi, called Lake Nyasa in Tanzania and Lago Niassa in Mozambique, lies between Malawi, Mozambique and Tanzania.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.chad.countries", "category": "lakes", "type": "GEO_RELATIONSHIP", "difficulty": 3,
+      "text": "Lake Chad lies where four countries meet. Select them.",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "lake_chad",
+      "map": { "focus": { "area": [2, 2, 24, 28] } },
+      "fact": { "object": "lake_chad", "countries": "shared_by" },
+      "explanation": "Lake Chad lies at the junction of Nigeria, Niger, Chad and Cameroon. Its open water shrank from 25,000 km² in 1960 to about 2,000 km² in 1980.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.aral.countries", "category": "lakes", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "The Aral Sea, once a huge salt lake, has largely dried up. Between which two countries did it lie?",
+      "description": "Tap the countries on the map, then press Check.",
+      "map": { "focus": { "area": [34, 48, 54, 74] } },
+      "correct": ["Kazakhstan", "Uzbekistan"],
+      "explanation": "The Aral Sea lay between Kazakhstan to the north and Uzbekistan to the south. It began shrinking in the 1950s and had largely turned into desert by 2007.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.superior.largest_freshwater", "category": "lakes", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which is the largest freshwater lake in the world by surface area?",
+      "object": "lake_superior",
+      "options": ["Lake Superior", "Lake Victoria", "Lake Baikal", "Lake Michigan"],
+      "correct": ["Lake Superior"],
+      "explanation": "Lake Superior, on the Canada–United States border, is the largest freshwater lake by surface area. Lake Victoria is second.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.superior.countries", "category": "lakes", "type": "GEO_RELATIONSHIP", "difficulty": 1,
+      "text": "Lake Superior straddles the border of which two countries?",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "lake_superior",
+      "map": { "focus": { "area": [25, -130, 62, -55] } },
+      "fact": { "object": "lake_superior", "countries": "shared_by" },
+      "explanation": "Lake Superior straddles the Canada–United States border, with the Canadian province of Ontario to the north and east.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.lake.michigan.one_country", "category": "lakes", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which of the five Great Lakes lies entirely within the United States?",
+      "options": ["Lake Michigan", "Lake Superior", "Lake Erie", "Lake Ontario"],
+      "correct": ["Lake Michigan"],
+      "explanation": "Lake Michigan lies entirely in the United States (Michigan, Wisconsin, Indiana and Illinois). The other four Great Lakes are shared with Canada.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.victoria.outflow", "category": "lakes", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which river drains Lake Victoria?",
+      "object": "lake_victoria",
+      "options": ["Nile", "Congo", "Zambezi", "Niger"],
+      "correct": ["Nile"],
+      "explanation": "Lake Victoria is drained solely by the Nile, near Jinja in Uganda, on the lake's northern shore.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.ladoga.largest_europe", "category": "lakes", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "Which is the largest lake located entirely in Europe?",
+      "object": "lake_ladoga",
+      "options": ["Lake Ladoga", "Lake Geneva", "Lake Balaton", "Lake Constance"],
+      "correct": ["Lake Ladoga"],
+      "explanation": "Lake Ladoga, in northwestern Russia near Saint Petersburg, is the largest lake located entirely in Europe and Russia's second-largest lake after Baikal.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.lake.identify.baikal", "category": "lakes", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which lake is highlighted on the map?",
+      "object": "lake_baikal",
+      "map": { "focus": { "object": true, "padding": 8 }, "showObject": true },
+      "options": ["Lake Baikal", "Lake Ladoga", "Lake Balkhash", "Caspian Sea"],
+      "correct": ["Lake Baikal"],
+      "explanation": "That is Lake Baikal in Siberia, Russia: the deepest and oldest lake in the world.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.lake.identify.tanganyika", "category": "lakes", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which lake is highlighted on the map?",
+      "object": "lake_tanganyika",
+      "map": { "focus": { "object": true, "padding": 6 }, "showObject": true },
+      "options": ["Lake Tanganyika", "Lake Victoria", "Lake Malawi", "Lake Chad"],
+      "correct": ["Lake Tanganyika"],
+      "explanation": "That is Lake Tanganyika, the long, narrow rift lake shared by Tanzania, DR Congo, Burundi and Zambia.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.lake.identify.superior", "category": "lakes", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which lake is highlighted on the map?",
+      "object": "lake_superior",
+      "map": { "focus": { "object": true, "padding": 8 }, "showObject": true },
+      "options": ["Lake Superior", "Lake Michigan", "Lake Victoria", "Lake Ladoga"],
+      "correct": ["Lake Superior"],
+      "explanation": "That is Lake Superior, the largest freshwater lake by surface area, on the Canada–United States border.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.lake.identify.titicaca", "category": "lakes", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which lake is highlighted on the map?",
+      "object": "lake_titicaca",
+      "map": { "focus": { "object": true, "padding": 6 }, "showObject": true },
+      "options": ["Lake Titicaca", "Lake Chad", "Lake Malawi", "Lake Victoria"],
+      "correct": ["Lake Titicaca"],
+      "explanation": "That is Lake Titicaca, high in the Andes on the border of Peru and Bolivia.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.lake.identify.ladoga", "category": "lakes", "type": "OBJECT_IDENTIFICATION", "difficulty": 3,
+      "text": "Which lake is highlighted on the map?",
+      "object": "lake_ladoga",
+      "map": { "focus": { "object": true, "padding": 6 }, "showObject": true },
+      "options": ["Lake Ladoga", "Lake Baikal", "Lake Balkhash", "Lake Superior"],
+      "correct": ["Lake Ladoga"],
+      "explanation": "That is Lake Ladoga in northwestern Russia, the largest lake entirely in Europe.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.volga.longest_europe", "category": "rivers", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which is the longest river in Europe?",
+      "object": "volga",
+      "options": ["Volga", "Danube", "Rhine", "Dnieper"],
+      "correct": ["Volga"],
+      "explanation": "The Volga is the longest river in Europe. It flows entirely through Russia and ends in the Caspian Sea.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.amazon.discharge", "category": "rivers", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Which river carries the most water in the world?",
+      "object": "amazon",
+      "options": ["Amazon", "Nile", "Yangtze", "Mississippi"],
+      "correct": ["Amazon"],
+      "explanation": "The Amazon is the largest river in the world by discharge volume. Whether it or the Nile is the longest is disputed.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.yangtze.china", "category": "rivers", "type": "TRUE_FALSE", "difficulty": 2,
+      "text": "True or false: the Yangtze is the longest river in China.",
+      "object": "yangtze",
+      "correct": ["True"],
+      "explanation": "True. The Yangtze is the longest river of China and the third-longest river in the world. It ends in the East China Sea.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.danube.capitals", "category": "rivers", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "The Danube flows through four national capitals. Which of these cities is NOT one of them?",
+      "object": "danube",
+      "options": ["Prague", "Vienna", "Budapest", "Belgrade"],
+      "correct": ["Prague"],
+      "explanation": "The Danube passes Vienna, Bratislava, Budapest and Belgrade. Prague is on the Vltava.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.rivers.capitals", "category": "rivers", "type": "MATCHING", "difficulty": 2,
+      "text": "Match each river with the capital city it flows through.",
+      "options": { "left": ["Thames", "Seine", "Tiber", "Vltava"], "right": ["London", "Paris", "Rome", "Prague"] },
+      "correct": [["Thames", "London"], ["Seine", "Paris"], ["Tiber", "Rome"], ["Vltava", "Prague"]],
+      "explanation": "The Thames flows through London, the Seine through Paris, the Tiber through Rome and the Vltava through Prague.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.rivers.mouths.world", "category": "rivers", "subcategory": "seas", "type": "MATCHING", "difficulty": 2,
+      "text": "Match each river with the sea, gulf or ocean it flows into.",
+      "options": { "left": ["Mississippi", "Yangtze", "Rhine", "Zambezi"], "right": ["Gulf of Mexico", "East China Sea", "North Sea", "Indian Ocean"] },
+      "fact": { "pairs": { "objects": ["mississippi", "yangtze", "rhine", "zambezi"], "links": "mouth" } },
+      "explanation": "The Mississippi ends in the Gulf of Mexico, the Yangtze in the East China Sea, the Rhine in the North Sea and the Zambezi in the Indian Ocean.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.rivers.mouths.asia", "category": "rivers", "subcategory": "seas", "type": "MATCHING", "difficulty": 3,
+      "text": "Match each Asian river with the sea or bay it flows into.",
+      "options": { "left": ["Ganges", "Indus", "Mekong", "Yangtze"], "right": ["Bay of Bengal", "Arabian Sea", "South China Sea", "East China Sea"] },
+      "correct": [["Ganges", "Bay of Bengal"], ["Indus", "Arabian Sea"], ["Mekong", "South China Sea"], ["Yangtze", "East China Sea"]],
+      "explanation": "The Ganges empties into the Bay of Bengal, the Indus into the Arabian Sea near Karachi, the Mekong into the South China Sea and the Yangtze into the East China Sea.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.colorado.mouth", "category": "rivers", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "The Colorado River flows from the United States into Mexico. Which gulf does it end in?",
+      "object": "colorado_river",
+      "options": ["Gulf of California", "Gulf of Mexico", "Persian Gulf", "Gulf of Aden"],
+      "fact": { "object": "colorado_river", "links": "mouth" },
+      "explanation": "The Colorado River's mouth is on the Gulf of California, in Mexico.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.river.rio_grande.border", "category": "rivers", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "For much of its length, the Rio Grande forms the border between the United States and which country?",
+      "options": ["Mexico", "Canada", "Guatemala", "Cuba"],
+      "correct": ["Mexico"],
+      "explanation": "South of El Paso, the Rio Grande is the national border between the United States and Mexico.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.ganges.countries", "category": "rivers", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select the two countries the Ganges flows through.",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "ganges",
+      "map": { "focus": { "area": [14, 68, 34, 98] } },
+      "fact": { "object": "ganges", "countries": "flows_through" },
+      "explanation": "The Ganges flows through India and Bangladesh, where it is called the Padma, and empties into the Bay of Bengal.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.niger.mouth", "category": "rivers", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "The Niger River ends in a huge delta on which gulf?",
+      "object": "niger_river",
+      "options": ["Gulf of Guinea", "Gulf of Aden", "Persian Gulf", "Gulf of Mexico"],
+      "correct": ["Gulf of Guinea"],
+      "explanation": "The Niger runs in a crescent through Mali, Niger and Nigeria and empties through the Niger Delta into the Gulf of Guinea, part of the Atlantic Ocean.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.river.identify.amazon", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which river is highlighted on the map?",
+      "object": "amazon",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Amazon", "Orinoco", "Paraná", "Congo"],
+      "correct": ["Amazon"],
+      "explanation": "That is the Amazon, which rises in the Andes of Peru and crosses Brazil to the Atlantic Ocean.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.identify.volga", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which river is highlighted on the map?",
+      "object": "volga",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Volga", "Danube", "Dnieper", "Ural"],
+      "correct": ["Volga"],
+      "explanation": "That is the Volga, Europe's longest river, which flows through Russia into the Caspian Sea.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.identify.congo", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which river is highlighted on the map?",
+      "object": "congo_river",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Congo", "Niger", "Zambezi", "Nile"],
+      "correct": ["Congo"],
+      "explanation": "That is the Congo, the deepest recorded river, which crosses the equator twice on its way to the Atlantic.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.identify.ganges", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which river is highlighted on the map?",
+      "object": "ganges",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Ganges", "Indus", "Brahmaputra", "Mekong"],
+      "correct": ["Ganges"],
+      "explanation": "That is the Ganges, which flows through India and Bangladesh to the Bay of Bengal.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.identify.niger", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 3,
+      "text": "Which river is highlighted on the map?",
+      "object": "niger_river",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Niger", "Congo", "Senegal", "Volta"],
+      "correct": ["Niger"],
+      "explanation": "That is the Niger, recognisable by its crescent through Mali, Niger and Nigeria to the Gulf of Guinea.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.river.identify.mekong", "category": "rivers", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which river is highlighted on the map?",
+      "object": "mekong",
+      "map": { "focus": { "object": true }, "showObject": true },
+      "options": ["Mekong", "Yangtze", "Ganges", "Irrawaddy"],
+      "correct": ["Mekong"],
+      "explanation": "That is the Mekong, which flows from the Tibetan Plateau through Southeast Asia to the South China Sea.",
+      "source": "natural_earth"
+    },
+    {
+      "code": "hydro.sea.sargasso", "category": "seas", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which is the only named sea without any land boundaries?",
+      "options": ["Sargasso Sea", "Caribbean Sea", "Coral Sea", "North Sea"],
+      "correct": ["Sargasso Sea"],
+      "explanation": "The Sargasso Sea, a region of the Atlantic Ocean, is bounded by four ocean currents instead of coasts. It is the only named sea without land boundaries.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.sea.baltic.brackish", "category": "seas", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which sea is the world's largest body of brackish water (a mix of fresh and salt water)?",
+      "options": ["Baltic Sea", "Red Sea", "Mediterranean Sea", "Arabian Sea"],
+      "correct": ["Baltic Sea"],
+      "explanation": "The Baltic Sea is the world's largest brackish water basin.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.sea.caspian.countries", "category": "seas", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Select the five countries that border the Caspian Sea.",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "caspian_sea",
+      "map": { "focus": { "area": [30, 38, 54, 64] } },
+      "fact": { "object": "caspian_sea", "countries": "shared_by" },
+      "explanation": "The Caspian Sea is bordered by Russia, Kazakhstan, Turkmenistan, Iran and Azerbaijan.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.sea.mediterranean.connections", "category": "seas", "subcategory": "straits", "type": "MULTIPLE_CHOICE", "difficulty": 3,
+      "text": "The Mediterranean Sea is connected to other waters through three of these. Select them.",
+      "object": "mediterranean_sea",
+      "options": ["Strait of Gibraltar", "Bosporus", "Suez Canal", "Strait of Hormuz", "Strait of Malacca", "Kiel Canal"],
+      "correct": ["Strait of Gibraltar", "Bosporus", "Suez Canal"],
+      "explanation": "The Mediterranean reaches the Atlantic through the Strait of Gibraltar, the Black Sea through the Bosporus (via the Dardanelles and the Sea of Marmara) and the Red Sea through the Suez Canal.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.sea.red.outlet", "category": "seas", "subcategory": "straits", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Through which strait does the Red Sea open to the ocean in the south?",
+      "object": "red_sea",
+      "options": ["Bab-el-Mandeb", "Strait of Hormuz", "Strait of Gibraltar", "Bosporus"],
+      "correct": ["Bab-el-Mandeb"],
+      "explanation": "The Red Sea connects to the ocean in the south through the Bab-el-Mandeb strait and the Gulf of Aden.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.sea.black_to_aegean", "category": "seas", "subcategory": "straits", "type": "SINGLE_CHOICE", "difficulty": 3,
+      "text": "A ship sails from the Black Sea to the Aegean Sea. Which strait does it pass through first?",
+      "options": ["Bosporus", "Dardanelles", "Strait of Gibraltar", "Strait of Dover"],
+      "correct": ["Bosporus"],
+      "explanation": "First the Bosporus, which links the Black Sea to the Sea of Marmara. Then the Dardanelles, which links the Sea of Marmara to the Aegean.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.hormuz.connects", "category": "straits", "type": "MULTIPLE_CHOICE", "difficulty": 2,
+      "text": "Which two bodies of water does the Strait of Hormuz connect?",
+      "object": "strait_of_hormuz",
+      "options": ["Persian Gulf", "Gulf of Oman", "Red Sea", "Gulf of Aden"],
+      "fact": { "object": "strait_of_hormuz", "links": "connects" },
+      "explanation": "The Strait of Hormuz is the waterway between the Persian Gulf and the Gulf of Oman.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.malacca.connects", "category": "straits", "type": "MULTIPLE_CHOICE", "difficulty": 2,
+      "text": "The Strait of Malacca, between the Malay Peninsula and Sumatra, connects which two seas?",
+      "object": "strait_of_malacca",
+      "options": ["Andaman Sea", "South China Sea", "East China Sea", "Red Sea"],
+      "fact": { "object": "strait_of_malacca", "links": "connects" },
+      "explanation": "The Strait of Malacca connects the Andaman Sea (Indian Ocean) with the South China Sea (Pacific Ocean).",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.bab_el_mandeb.connects", "category": "straits", "type": "MULTIPLE_CHOICE", "difficulty": 2,
+      "text": "Which two bodies of water does the Bab-el-Mandeb strait connect?",
+      "object": "bab_el_mandeb",
+      "options": ["Red Sea", "Gulf of Aden", "Persian Gulf", "Gulf of Oman"],
+      "fact": { "object": "bab_el_mandeb", "links": "connects" },
+      "explanation": "Bab-el-Mandeb connects the Red Sea with the Gulf of Aden. Yemen, Djibouti and Eritrea border it.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.dardanelles.connects", "category": "straits", "type": "MULTIPLE_CHOICE", "difficulty": 2,
+      "text": "Which two seas does the Dardanelles strait connect?",
+      "object": "dardanelles",
+      "options": ["Sea of Marmara", "Aegean Sea", "Black Sea", "Red Sea"],
+      "fact": { "object": "dardanelles", "links": "connects" },
+      "explanation": "The Dardanelles, in Turkey, connects the Sea of Marmara with the Aegean Sea.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.bering.ocean", "category": "straits", "subcategory": "oceans", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "The Bering Strait connects the Pacific Ocean with which ocean?",
+      "options": ["Arctic Ocean", "Atlantic Ocean", "Indian Ocean", "Southern Ocean"],
+      "correct": ["Arctic Ocean"],
+      "explanation": "The Bering Strait lies between the Pacific and Arctic oceans, separating Russia's Chukchi Peninsula from Alaska.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.bering.countries", "category": "straits", "type": "GEO_RELATIONSHIP", "difficulty": 1,
+      "text": "The Bering Strait separates which two countries?",
+      "description": "Tap the countries on the map, then press Check.",
+      "map": { "focus": { "area": [45, -180, 75, -140] } },
+      "correct": ["Russia", "United States"],
+      "explanation": "The Bering Strait separates the Chukchi Peninsula of the Russian Far East from Alaska, in the United States.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.magellan.country", "category": "straits", "type": "MAP_IDENTIFICATION", "difficulty": 2,
+      "text": "The Strait of Magellan is the most important natural passage between the Atlantic and Pacific oceans. Tap the country it is in.",
+      "map": { "focus": { "area": [-60, -90, -15, -40] } },
+      "correct": ["Chile"],
+      "explanation": "The Strait of Magellan is in southern Chile, between mainland South America and Tierra del Fuego.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.drake_passage", "category": "straits", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "Which body of water lies between Cape Horn and Antarctica?",
+      "options": ["Drake Passage", "Strait of Magellan", "Bering Strait", "Mozambique Channel"],
+      "correct": ["Drake Passage"],
+      "explanation": "The Drake Passage lies between Cape Horn in Chile and the South Shetland Islands of Antarctica, connecting the Atlantic and Pacific oceans.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.palk.countries", "category": "straits", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "The Palk Strait separates which two countries?",
+      "description": "Tap the countries on the map, then press Check.",
+      "map": { "focus": { "area": [2, 70, 18, 88] } },
+      "correct": ["India", "Sri Lanka"],
+      "explanation": "The Palk Strait lies between the Indian state of Tamil Nadu and the Northern Province of Sri Lanka.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.mozambique_channel.countries", "category": "straits", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "The Mozambique Channel, an arm of the Indian Ocean, lies between which two countries?",
+      "description": "Tap the countries on the map, then press Check.",
+      "map": { "focus": { "area": [-32, 26, -6, 54] } },
+      "correct": ["Mozambique", "Madagascar"],
+      "explanation": "The Mozambique Channel lies between Mozambique and Madagascar.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.dover.countries", "category": "straits", "type": "GEO_RELATIONSHIP", "difficulty": 1,
+      "text": "The Strait of Dover separates which two countries?",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "strait_of_dover",
+      "map": { "focus": { "area": [42, -12, 60, 14] } },
+      "fact": { "object": "strait_of_dover", "countries": "borders" },
+      "explanation": "The Strait of Dover lies between France and the United Kingdom.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.strait.identify.hormuz", "category": "straits", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which strait is marked on the map?",
+      "object": "strait_of_hormuz",
+      "map": { "focus": { "object": true, "padding": 14 }, "showObject": true },
+      "options": ["Strait of Hormuz", "Bab-el-Mandeb", "Strait of Malacca", "Bosporus"],
+      "correct": ["Strait of Hormuz"],
+      "explanation": "That is the Strait of Hormuz, between the Persian Gulf and the Gulf of Oman.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.identify.malacca", "category": "straits", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which strait is marked on the map?",
+      "object": "strait_of_malacca",
+      "map": { "focus": { "object": true, "padding": 14 }, "showObject": true },
+      "options": ["Strait of Malacca", "Strait of Hormuz", "Bab-el-Mandeb", "Strait of Gibraltar"],
+      "correct": ["Strait of Malacca"],
+      "explanation": "That is the Strait of Malacca, between the Malay Peninsula and Sumatra.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.identify.bosporus", "category": "straits", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which strait is marked on the map?",
+      "object": "bosporus",
+      "map": { "focus": { "object": true, "padding": 10 }, "showObject": true },
+      "options": ["Bosporus", "Strait of Gibraltar", "Strait of Dover", "Strait of Hormuz"],
+      "correct": ["Bosporus"],
+      "explanation": "That is the Bosporus, in Istanbul, linking the Black Sea to the Sea of Marmara.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.strait.identify.bab_el_mandeb", "category": "straits", "type": "OBJECT_IDENTIFICATION", "difficulty": 3,
+      "text": "Which strait is marked on the map?",
+      "object": "bab_el_mandeb",
+      "map": { "focus": { "object": true, "padding": 14 }, "showObject": true },
+      "options": ["Bab-el-Mandeb", "Strait of Hormuz", "Bosporus", "Strait of Malacca"],
+      "correct": ["Bab-el-Mandeb"],
+      "explanation": "That is Bab-el-Mandeb, between the Red Sea and the Gulf of Aden.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.canal.kiel", "category": "canals", "subcategory": "seas", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "The Kiel Canal in northern Germany links the North Sea with which sea?",
+      "options": ["Baltic Sea", "Black Sea", "Mediterranean Sea", "White Sea"],
+      "correct": ["Baltic Sea"],
+      "explanation": "The 98 km Kiel Canal crosses the German state of Schleswig-Holstein and links the North Sea to the Baltic Sea.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.canal.suez.country", "category": "canals", "type": "MAP_IDENTIFICATION", "difficulty": 1,
+      "text": "Tap the country the Suez Canal runs through.",
+      "object": "suez_canal",
+      "map": { "focus": { "area": [12, 18, 40, 52] } },
+      "fact": { "object": "suez_canal", "countries": "located_in" },
+      "explanation": "The Suez Canal runs through Egypt and links the Mediterranean Sea to the Red Sea.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.canal.panama.country", "category": "canals", "type": "MAP_IDENTIFICATION", "difficulty": 1,
+      "text": "Tap the country the Panama Canal runs through.",
+      "object": "panama_canal",
+      "map": { "focus": { "area": [0, -95, 22, -68] } },
+      "fact": { "object": "panama_canal", "countries": "located_in" },
+      "explanation": "The Panama Canal runs through Panama and links the Atlantic Ocean (via the Caribbean Sea) with the Pacific Ocean.",
+      "source": "wikidata"
+    },
+    {
+      "code": "hydro.waterfall.niagara.countries", "category": "waterfalls", "type": "GEO_RELATIONSHIP", "difficulty": 1,
+      "text": "Niagara Falls spans the border of which two countries?",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "niagara_falls",
+      "map": { "focus": { "area": [25, -130, 62, -55] } },
+      "fact": { "object": "niagara_falls", "countries": "shared_by" },
+      "explanation": "Niagara Falls spans the border between the Canadian province of Ontario and the US state of New York.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.waterfall.niagara.lakes", "category": "waterfalls", "subcategory": "lakes", "type": "SINGLE_CHOICE", "difficulty": 2,
+      "text": "The Niagara River, which forms Niagara Falls, drains Lake Erie into which lake?",
+      "object": "niagara_falls",
+      "options": ["Lake Ontario", "Lake Superior", "Lake Michigan", "Lake Huron"],
+      "correct": ["Lake Ontario"],
+      "explanation": "The Niagara River drains Lake Erie into Lake Ontario. The falls have the highest flow rate of any waterfall in North America.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.waterfall.iguazu.countries", "category": "waterfalls", "type": "GEO_RELATIONSHIP", "difficulty": 2,
+      "text": "Iguazu Falls lies on the border of which two countries?",
+      "description": "Tap the countries on the map, then press Check.",
+      "object": "iguazu_falls",
+      "map": { "focus": { "area": [-40, -75, 0, -35] } },
+      "fact": { "object": "iguazu_falls", "countries": "shared_by" },
+      "explanation": "Iguazu Falls, on the Iguazu River, lies on the border of Argentina and Brazil.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.waterfall.victoria.river", "category": "waterfalls", "subcategory": "rivers", "type": "SINGLE_CHOICE", "difficulty": 1,
+      "text": "Victoria Falls is on which river?",
+      "object": "victoria_falls",
+      "options": ["Zambezi", "Congo", "Nile", "Niger"],
+      "fact": { "object": "victoria_falls", "links": "on_river" },
+      "explanation": "Victoria Falls is on the Zambezi, on the border of Zambia and Zimbabwe.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.waterfalls.countries", "category": "waterfalls", "type": "MATCHING", "difficulty": 2,
+      "text": "Match each waterfall with the country or countries where it is.",
+      "options": { "left": ["Angel Falls", "Victoria Falls", "Niagara Falls", "Iguazu Falls"], "right": ["Venezuela", "Zambia and Zimbabwe", "Canada and United States", "Argentina and Brazil"] },
+      "correct": [["Angel Falls", "Venezuela"], ["Victoria Falls", "Zambia and Zimbabwe"], ["Niagara Falls", "Canada and United States"], ["Iguazu Falls", "Argentina and Brazil"]],
+      "explanation": "Angel Falls is in Venezuela, Victoria Falls on the Zambia–Zimbabwe border, Niagara Falls on the Canada–United States border and Iguazu Falls on the Argentina–Brazil border.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.waterfall.identify.victoria", "category": "waterfalls", "type": "OBJECT_IDENTIFICATION", "difficulty": 2,
+      "text": "Which waterfall is marked on the map?",
+      "object": "victoria_falls",
+      "map": { "focus": { "object": true, "padding": 25 }, "showObject": true },
+      "options": ["Victoria Falls", "Iguazu Falls", "Angel Falls", "Niagara Falls"],
+      "correct": ["Victoria Falls"],
+      "explanation": "That is Victoria Falls, on the Zambezi between Zambia and Zimbabwe.",
+      "source": "wikipedia"
+    },
+    {
+      "code": "hydro.waterfall.identify.niagara", "category": "waterfalls", "type": "OBJECT_IDENTIFICATION", "difficulty": 1,
+      "text": "Which waterfall is marked on the map?",
+      "object": "niagara_falls",
+      "map": { "focus": { "object": true, "padding": 25 }, "showObject": true },
+      "options": ["Niagara Falls", "Angel Falls", "Iguazu Falls", "Victoria Falls"],
+      "correct": ["Niagara Falls"],
+      "explanation": "That is Niagara Falls, between Lake Erie and Lake Ontario on the Canada–United States border.",
+      "source": "wikipedia"
+    }
+  ]
+}

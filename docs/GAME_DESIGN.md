@@ -27,8 +27,13 @@ The original Atlas Quest gameplay: 10 rounds alternating **Find it** (tap the na
 
 ### Level 2 · Hydro Explorer (×2) ✅ (sample content)
 
-Rivers, river basins, lakes, waterfalls, seas, oceans, straits, canals. 22 verified questions:
-- identify a highlighted river or lake (Natural Earth geometry);
+Rivers, river basins, lakes, waterfalls, seas, oceans (including currents and depths), straits, canals. **110 verified questions** (22 from v2.0.0 + 88 added in v2.2.0, `content/questions/level-2-hydro-2.json`):
+- identify a highlighted river or lake (Natural Earth geometry; now also Amazon, Volga, Congo, Ganges, Niger, Mekong, Baikal, Tanganyika, Superior, Titicaca, Ladoga) or a marked strait or waterfall;
+- oceans: largest, smallest, deepest trenches (Challenger Deep, Puerto Rico and Sunda trenches);
+- ocean currents: warm vs cold (Gulf Stream, North Atlantic, Kuroshio vs Humboldt, California, Labrador), which ocean each current is in, the Antarctic Circumpolar Current, Benguela and Canary currents;
+- depths and records: second-deepest lake, Dead Sea (lowest land, salt lake), Baikal's share of fresh water, deepest river (Congo);
+- connections: which seas a strait or canal links (Hormuz, Malacca, Bab-el-Mandeb, Dardanelles, Bering, Kiel), the Mediterranean's three gateways, the Black Sea → Aegean route, river mouths in Asia and worldwide, rivers and the capitals they cross;
+- countries sharing lakes, seas and straits on the map (Caspian, Tanganyika, Malawi, Chad, Aral, Bering, Palk, Mozambique Channel, Dover);
 - select every country a river flows through (Danube, Mekong, Amazon) or a basin covers (Nile);
 - match rivers with their mouths and with the country where they rise;
 - name a marked strait or waterfall; which seas a strait or canal connects;

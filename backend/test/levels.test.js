@@ -413,7 +413,7 @@ describe('levels', () => {
     try {
       const ok = await h.call('POST', '/sessions', { token, body: { level: 'hydro', rounds: 20 } });
       assert.equal(ok.status, 201);
-      // Only 22 hydro questions exist; 20 are served, none twice.
+      // 20 hydro questions are served, none twice.
       assert.equal(ok.body.questions.length, 20);
       await h.call('POST', `/sessions/${ok.body.session.id}/abandon`, { token });
     } finally {
