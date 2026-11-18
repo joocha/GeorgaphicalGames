@@ -17,7 +17,8 @@ Hydro Explorer content batch 2. Content only: no code, schema or API change.
 
 ### Tooling
 - `backend/prisma/checks/health_check.sql`: read-only production health report (migrations, columns, triggers, level rules, scoring rules, questions per level, knowledge objects, player info), each failure naming its fix. Tested on PGlite in four states: healthy, no content, still on v2.0, and empty.
-- `backend/scripts/repair.sh`: backup, then migrations from a clone of the deployed commit (API stopped only when migrations are pending), then content import, restart and a second health check. `--check` runs the health check only. Prisma status parsing was tested against real `prisma migrate status/deploy` output.
+- `backend/scripts/repair.sh`: backup, then migrations from a clone of the deployed commit (API stopped only when migrations are pending), then content import, restart and a second health check. `--check` runs the health check only. Prisma status parsing was tested against real `prisma migrate status/deploy` output. `--baseline` handles databases whose migrations were applied by hand (no `_prisma_migrations`; `migrate deploy` refuses with P3005). It records them as applied only after Prisma's drift check passes and all other checks are OK. End-to-end test on PostgreSQL 17.12 (Docker) in the production state (raw-SQL migrations, no history): `--check` reports it, a plain run refuses with instructions, `--baseline` records 5 migrations and ends HEALTHY with a backup, and a second run is a no-op.
+- Found on production (2026-11-18): migrations had been applied with `psql`, so Prisma's history was missing. Fix: `repair.sh --baseline`.
 - Found during this release: production had never had `npm run content:import` run, so levels 2–5 couldn't start (`409 no_questions`). Fixed on the server on 2026-11-18 (168 questions imported).
 
 ### Database / API changes

@@ -25,7 +25,11 @@ DECLARE
     rep text[] := '{}';   -- rows: status|check|detail
 BEGIN
     -- 1. Migrations applied (and not failed/rolled back).
-    IF to_regclass('_prisma_migrations') IS NULL THEN
+    IF to_regclass('_prisma_migrations') IS NULL AND to_regclass('game_results') IS NOT NULL THEN
+        -- Tables exist but Prisma never recorded them: migrations were run by
+        -- hand (psql). migrate deploy refuses such a database (P3005).
+        rep := rep || concat_ws('|', 'FAIL', 'migrations', 'schema exists but Prisma''s history (_prisma_migrations) is missing: migrations were applied by hand -> bash scripts/repair.sh --baseline');
+    ELSIF to_regclass('_prisma_migrations') IS NULL THEN
         rep := rep || concat_ws('|', 'FAIL', 'migrations', '_prisma_migrations missing: database never migrated -> npm run db:migrate:deploy');
     ELSE
         FOREACH m IN ARRAY expected LOOP

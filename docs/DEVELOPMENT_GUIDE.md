@@ -156,6 +156,12 @@ bash backend/scripts/repair.sh          # asks before changing anything; --yes t
 4. `npm run content:import` (idempotent).
 5. Restart the service, wait for `/api/health`, run the health check again; exit 1 if anything still fails. If a step fails after the API was stopped, the API is started again.
 
+**Migrations applied by hand (baseline):** if the health check says *"schema exists but Prisma's history (_prisma_migrations) is missing"*, the migrations were run with `psql` instead of `prisma migrate deploy`. The game works, but `migrate deploy` refuses such a database (P3005), so the next migration could never be deployed. Fix it once with:
+```bash
+bash backend/scripts/repair.sh --baseline
+```
+This records each migration as applied (`prisma migrate resolve --applied`) **only if** Prisma's drift check (`migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code`) shows the database matches the schema exactly **and** every other health check passes. It changes no table and no data. Production needed this on 2026-11-18. From then on, apply migrations only with `npm run db:migrate:deploy` or `repair.sh`, never with `psql -f migration.sql`.
+
 Why not a single SQL file: migrations must go through `prisma migrate deploy` so `_prisma_migrations` stays correct, and content import derives and validates answers in Node. So SQL is used only for checking.
 
 `prisma/checks/schema_checks.sql` is different: it tests constraints by inserting rows (then rolls back) and is meant for local or staging databases, never production.
