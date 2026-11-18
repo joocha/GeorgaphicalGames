@@ -73,7 +73,11 @@ All nine types are supported by one engine ([QUESTION_ENGINE.md](QUESTION_ENGINE
 ## Map interactions ✅
 
 - Tap countries (single answer, or toggle a multi-selection).
-- Drag to pan, pinch or mouse-wheel to zoom, ⤢ to re-centre (levels 2–5). Level 1 keeps its original fixed zoom.
+- Levels 2–5: drag to pan, pinch or mouse-wheel to zoom, ⤢ to re-centre.
+- Level 1 (v2.3.0): two-finger pinch to zoom and two-finger drag to pan on touch screens. One finger only taps, as before, and desktop mouse/wheel behaviour is unchanged. Each new round starts from its own fitted view.
+- Boundaries (all levels): zoom stays between 18 and 1,400 map units wide, and the view's centre stays on the map, so the map can't be pushed out of sight.
+
+**Decision (2026-11-18): pinch-to-zoom in Level 1.** Previous: Level 1 kept its original fixed zoom (v2.0.0). New: touch-only two-finger pinch/pan (`setInteractive("pinch")`); one-finger taps, the round's fitted view, the mouse and the wheel stay exactly as before. Reason: small countries are hard to tap on phones. Implication: client-only. Scoring, answers and results are unchanged, and there's no migration.
 - **Rivers** / **Lakes** buttons turn background layers on and off. Layers load only when first needed.
 - After answering: correct countries green, wrong picks red, missed ones light green, labels shown; the object (river, lake or marker) is highlighted and named; the explanation and source appear.
 

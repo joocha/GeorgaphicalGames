@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated: 2026-11-18 (v2.1.0 prepared, not yet deployed).
+Last updated: 2026-11-18 (v2.1.0 prepared, not yet deployed; v2.3.0 Level 1 pinch-to-zoom prepared).
 
 ## Completed
 
@@ -20,6 +20,7 @@ Last updated: 2026-11-18 (v2.1.0 prepared, not yet deployed).
 | **Hydro content batch 2: +88 questions (currents, depths, oceans, connections); Hydro now 110** | v2.2.0 |
 | **Interactive map: pan/zoom, lazy river/lake layers, markers, multi-select, reveal** | v2.0.0 |
 | **Per-level bests and progress, statistics endpoint** | v2.0.0 |
+| **Level 1 pinch-to-zoom on touch screens; map view clamped to the map in all levels** | v2.3.0 |
 | **n8n internal API (verified facts, AI drafts) and review CLI** | v2.0.0 |
 | **Documentation system (`docs/`, `CLAUDE.md`)** | v2.0.0 |
 | **Scoring ÷10, Level 1 Hard = 2× Easy, versioned score scale (history normalized on read)** | v2.1.0 |

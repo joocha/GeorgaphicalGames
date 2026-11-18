@@ -2,6 +2,30 @@
 
 All notable changes. Versions follow [Semantic Versioning](https://semver.org/). Releases up to v1.4.8 were tagged by commit message only; their entries below are reconstructed from git history.
 
+## [2.3.0] – 2026-11-18 (prepared; not yet deployed)
+
+Pinch-to-zoom in Level 1. Client only: no backend, schema, API or scoring change.
+
+### New features
+- **Level 1 pinch-to-zoom** on touch screens (iOS and Android). Two fingers zoom around their midpoint and pan as they move. One finger still only taps, a pinch never counts as a tap, and each new round starts from its own fitted view. On desktop, mouse clicks work as before; wheel and drag don't zoom or pan Level 1, also as before.
+
+### Changes
+- `makeMap().setInteractive` accepts `"pinch"` (two-finger touch only) as well as `true` / `false`.
+- All levels: pinch now keeps the map point under the fingers fixed and follows a two-finger pan. Before, it zoomed around the starting midpoint only. The view's centre is clamped to the map, so dragging or pinching can't push the map out of sight. Redraws happen at most once per frame. iOS `gesturestart` is cancelled while gestures are on.
+- Design decision recorded in [GAME_DESIGN.md](GAME_DESIGN.md#map-interactions-) (Level 1 no longer has a fixed zoom).
+
+### Database / API changes
+None.
+
+### Tests
+`npm test`: 78 passing. Browser check in Chromium (Playwright, 390×844 touch emulation with CDP multi-touch; 1200×800 desktop), 23/23: one-finger drag doesn't move the map or answer; a 4× pinch gives exactly 4× zoom with the focal point fixed (< 0.5 units); two-finger pan follows the fingers; releasing a pinch doesn't answer; the zoom-out cap and centre clamp hold when dragged far off-screen; a one-finger tap on the right country still scores; the next round resets the view; desktop wheel/drag leave Level 1 unchanged and a click still answers; full mode (levels 2–5) still wheel-zooms and is clamped; no page errors. Not yet checked on physical iOS/Android devices.
+
+### Deployment
+Push `index.html` (rebuilt). No restart-sensitive change, no migration, no content import.
+
+### Known issues
+- Level 1 has no one-finger pan when zoomed in (by design, to keep one finger as a tap). Use two fingers to move.
+
 ## [2.2.0] – 2026-11-18 (prepared; not yet imported)
 
 Hydro Explorer content batch 2. Content only: no code, schema or API change.

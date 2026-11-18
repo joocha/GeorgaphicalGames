@@ -338,21 +338,37 @@ function makeMap(host,onTap){
   const els={};svg.querySelectorAll("path.c").forEach(p=>els[p.dataset.n]=p);
   const over=svg.querySelector(".over"),layersG=svg.querySelector(".layers");let vb=[0,0,1000,500],anim,labels=[],marks=[];
   const apply=()=>{svg.setAttribute("viewBox",vb.join(" "));labels.forEach(t=>{t.setAttribute("font-size",vb[2]*.045);t.setAttribute("stroke-width",vb[2]*.012);if(t._dy)t.setAttribute("y",t._y+vb[2]*t._dy)});marks.forEach(m=>{m.setAttribute("r",vb[2]*.014);m.setAttribute("stroke-width",vb[2]*.004)})};
-  // Pan & zoom (only while interactive). A drag never counts as a tap.
-  let interactive=false,suppress=false;const pts=new Map();let g0=null;
+  // Gestures. mode false: tap only. "pinch" (Level 1): two-finger touch pinch
+  // only, so one finger still just taps and desktop mouse/wheel behave as
+  // before. true (Levels 2-5): drag, pinch and wheel. A gesture never counts as a tap.
+  let mode=false,suppress=false,raf=0;const pts=new Map();let g0=null;
   const scale=()=>{const r=svg.getBoundingClientRect();return Math.min(r.width/vb[2],r.height/vb[3])||1};
   const toMap=(cx,cy)=>{const r=svg.getBoundingClientRect(),s=scale();return[vb[0]+(cx-r.left-(r.width-vb[2]*s)/2)/s,vb[1]+(cy-r.top-(r.height-vb[3]*s)/2)/s]};
-  const zoomAt=(mx,my,f)=>{const w=Math.min(1400,Math.max(18,vb[2]*f)),k=w/vb[2];vb=[mx-(mx-vb[0])*k,my-(my-vb[1])*k,w,vb[3]*k];apply()};
-  svg.addEventListener("pointerdown",e=>{if(!interactive)return;cancelAnimationFrame(anim);pts.set(e.pointerId,[e.clientX,e.clientY]);
-    const p=[...pts.values()];g0={vb:vb.slice(),p,moved:false,s:scale(),d:p.length>1?Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]):0,
-      mid:p.length>1?toMap((p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2):null}});
-  addEventListener("pointermove",e=>{if(!interactive||!pts.has(e.pointerId)||!g0)return;pts.set(e.pointerId,[e.clientX,e.clientY]);const p=[...pts.values()];
-    if(p.length===1&&g0.p.length===1){const dx=p[0][0]-g0.p[0][0],dy=p[0][1]-g0.p[0][1];if(Math.hypot(dx,dy)>6)g0.moved=true;if(g0.moved){vb=[g0.vb[0]-dx/g0.s,g0.vb[1]-dy/g0.s,g0.vb[2],g0.vb[3]];apply()}}
-    else if(p.length>1&&g0.d){g0.moved=true;const d=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);vb=g0.vb.slice();zoomAt(g0.mid[0],g0.mid[1],g0.d/d)}});
+  // The view's centre must stay on the 1000×500 map, so at least half the
+  // screen is always map and it can never be dragged or pinched out of sight.
+  const clampVb=v=>{const cx=Math.min(1000,Math.max(0,v[0]+v[2]/2)),cy=Math.min(500,Math.max(0,v[1]+v[3]/2));return[cx-v[2]/2,cy-v[3]/2,v[2],v[3]]};
+  const zoomW=w=>Math.min(1400,Math.max(18,w));
+  // Touch moves can fire faster than the screen refreshes: draw once per frame.
+  const draw=()=>{if(!raf)raf=requestAnimationFrame(()=>{raf=0;apply()})};
+  const zoomAt=(mx,my,f)=>{const w=zoomW(vb[2]*f),k=w/vb[2];vb=clampVb([mx-(mx-vb[0])*k,my-(my-vb[1])*k,w,vb[3]*k]);apply()};
+  const dist=p=>Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);
+  // The map point that was under the fingers' midpoint stays under it, so the
+  // map zooms around the focal point and follows the fingers as they move.
+  const pinch=p=>{const r=svg.getBoundingClientRect(),d=dist(p);if(!d)return;const b=g0.vb,w=zoomW(b[2]*g0.d/d),h=b[3]*w/b[2],
+    s=Math.min(r.width/w,r.height/h)||1,cx=(p[0][0]+p[1][0])/2,cy=(p[0][1]+p[1][1])/2;
+    vb=clampVb([g0.mid[0]-(cx-r.left-(r.width-w*s)/2)/s,g0.mid[1]-(cy-r.top-(r.height-h*s)/2)/s,w,h]);draw()};
+  svg.addEventListener("pointerdown",e=>{if(!mode||(mode==="pinch"&&e.pointerType==="mouse"))return;pts.set(e.pointerId,[e.clientX,e.clientY]);
+    const p=[...pts.values()];if(mode===true||p.length>1)cancelAnimationFrame(anim);
+    g0={vb:vb.slice(),p,moved:false,s:scale(),d:p.length>1?dist(p):0,mid:p.length>1?toMap((p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2):null}});
+  addEventListener("pointermove",e=>{if(!mode||!pts.has(e.pointerId)||!g0)return;pts.set(e.pointerId,[e.clientX,e.clientY]);const p=[...pts.values()];
+    if(p.length===1&&g0.p.length===1){if(mode!==true)return;const dx=p[0][0]-g0.p[0][0],dy=p[0][1]-g0.p[0][1];if(Math.hypot(dx,dy)>6)g0.moved=true;if(g0.moved){vb=clampVb([g0.vb[0]-dx/g0.s,g0.vb[1]-dy/g0.s,g0.vb[2],g0.vb[3]]);draw()}}
+    else if(p.length>1&&g0.d){g0.moved=true;pinch(p)}});
   const up=e=>{if(!pts.has(e.pointerId))return;pts.delete(e.pointerId);if(g0&&g0.moved){suppress=true;setTimeout(()=>suppress=false,60)}
     if(pts.size){const p=[...pts.values()];g0={vb:vb.slice(),p,moved:true,s:scale(),d:0}}else g0=null};
   addEventListener("pointerup",up);addEventListener("pointercancel",up);
-  svg.addEventListener("wheel",e=>{if(!interactive)return;e.preventDefault();const[mx,my]=toMap(e.clientX,e.clientY);zoomAt(mx,my,e.deltaY>0?1.18:1/1.18)},{passive:false});
+  // iOS WebKit fires its own gesture events; stop them zooming the page.
+  host.addEventListener("gesturestart",e=>{if(mode)e.preventDefault()});
+  svg.addEventListener("wheel",e=>{if(mode!==true)return;e.preventDefault();const[mx,my]=toMap(e.clientX,e.clientY);zoomAt(mx,my,e.deltaY>0?1.18:1/1.18)},{passive:false});
   svg.addEventListener("click",e=>{if(suppress){e.stopPropagation();e.preventDefault()}},true);
   if(onTap)svg.addEventListener("click",e=>{const p=e.target.closest&&e.target.closest("path.c");if(p)onTap(p.dataset.n)});
   const layerState={},layerEls={};
@@ -375,7 +391,8 @@ function makeMap(host,onTap){
     label(n){const c=byName[n];if(c)api.labelAt(c.cx,c.cy,n)},
     labelAt(x,y,text,dy){const t=document.createElementNS(NS,"text");t.textContent=text;t.setAttribute("x",x);t.setAttribute("y",y);t._y=y;t._dy=dy||0;t.setAttribute("text-anchor","middle");t.setAttribute("dominant-baseline","middle");over.appendChild(t);labels.push(t);apply()},
     marker(x,y,cls){const c=document.createElementNS(NS,"circle");c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("class","mk"+(cls?" "+cls:""));over.appendChild(c);marks.push(c);apply()},
-    setInteractive(on){interactive=on;host.classList.toggle("pz",on)},
+    // on: true (drag, pinch, wheel), "pinch" (two-finger touch only) or false.
+    setInteractive(on){mode=on;pts.clear();g0=null;host.classList.toggle("pz",!!on)},
     // Shows or hides a layer; `user` remembers the player's own toggle.
     async showLayer(name,on,{user}={}){const st=layerState[name]||(layerState[name]={user:false});if(user!==undefined)st.user=user;
       if(on&&!layerEls[name]){const data=await loadLayer(name);if(!layerEls[name]){const g=document.createElementNS(NS,"g");g.setAttribute("class","L L-"+name);
@@ -436,7 +453,7 @@ let starting=false;
 async function startGame(){
   if(starting)return;
   if(mustSignIn){starting=true;const ok=await ensureSession().finally(()=>{starting=false});if(!ok)return}
-  clearInterval(spotT);EG=null;resetGameMap();
+  clearInterval(spotT);EG=null;resetGameMap();gameMap.setInteractive("pinch");
   const pool=shuffle(level==="easy"?EASY:ALL).slice(0,ROUNDS);
   G={qs:pool.map((n,i)=>({n,type:i%2?"name":"find"})),i:0,score:0,correct:0,streak:0,bestStreak:0,res:[],done:false,pts:l1Points(level)};
   // Open a game session on the server without blocking play.
