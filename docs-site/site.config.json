@@ -1,0 +1,21 @@
+{
+  "$comment": "Public documentation site settings. siteUrl is used for canonical links, the sitemap and absolute URLs in the AI index. Never put secrets or server details in this file: it is part of the public build.",
+  "product": "GeoAIGames",
+  "siteName": "GeoAIGames Docs",
+  "siteUrl": "https://docs.geoaigames.joocha.com",
+  "language": "en",
+  "playUrl": "https://t.me/geoaigames_bot/play",
+  "appVersionFile": "backend/package.json",
+  "whatsNewCategories": ["New Features", "Improvements", "Bug Fixes", "Technical Updates", "Breaking Changes"],
+  "unavailableFeatures": [
+    { "feature": "achievements", "pattern": "\\bachievements?\\b|\\b(achievement|reward) badges?\\b" },
+    { "feature": "leaderboards", "pattern": "\\bleaderboards?\\b|\\brankings?\\b|\\bpublic (player )?profiles?\\b" },
+    { "feature": "time limits", "pattern": "\\btime limits?\\b|\\btimed rounds?\\b|\\btime bonus(es)?\\b|\\bcountdown\\b" },
+    { "feature": "daily challenge", "pattern": "\\bdaily challenges?\\b|\\bfriend duels?\\b" },
+    { "feature": "AI hints", "pattern": "\\bAI hints?\\b" },
+    { "feature": "statistics screen", "pattern": "\\bstatistics screen\\b" },
+    { "feature": "level 6", "pattern": "\\bLevel 6\\b" },
+    { "feature": "profile deletion", "pattern": "\\bdelet(e|ing) (a |your |the )?profile\\b" }
+  ],
+  "negationMarkers": ["not ", "no ", "never", "isn't", "aren't", "doesn't", "don't", "does not", "do not", "cannot", "without", "none", "planned", "not yet", "not available"]
+}

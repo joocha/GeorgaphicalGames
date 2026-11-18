@@ -1,0 +1,44 @@
+name: Documentation checks
+
+# Validation only; this workflow never deploys. Publication happens in
+# deploy.yml after the API is healthy. Here, a broken documentation change
+# shows up on the pull request (and on main) before it can block a release.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: Validate, test and build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the generator tests and evidence need git history
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tool tests
+        working-directory: docs-site
+        run: npm test
+
+      - name: Validate sources
+        run: node docs-site/tools/docs.js validate
+
+      - name: Release check for the app version
+        # Fails when backend/package.json names a version whose documentation
+        # is missing or still a draft: that release would not get its docs.
+        run: node docs-site/tools/docs.js validate --release
+
+      - name: Build and validate the site
+        run: |
+          node docs-site/tools/docs.js build --release --out "$RUNNER_TEMP/docs-site"
+          node docs-site/tools/docs.js validate-dist "$RUNNER_TEMP/docs-site"

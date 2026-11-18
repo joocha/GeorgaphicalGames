@@ -2,7 +2,40 @@
 
 All notable changes. Versions follow [Semantic Versioning](https://semver.org/). Releases up to v1.4.8 were tagged by commit message only; their entries below are reconstructed from git history.
 
-## [2.3.0] – 2026-11-18 (prepared; not yet deployed)
+## [Unreleased] – Public documentation platform (app version stays 2.3.0)
+
+Documentation, tooling and deploy integration only. No change to the game, the API, the database, scoring or content, so the app version is not bumped ([VERSIONING.md](VERSIONING.md)).
+
+### New features
+- **Public documentation website** (`docs-site/`, to be served at `https://docs.geoaigames.joocha.com/`): static HTML generated from Markdown, responsive, light/dark, sidebar and mobile menu, search, version selector, breadcrumbs, last-updated dates, previous/next links, changelog. No dependencies.
+- **Documentation for version 2.3.0** (initial documentation release), verified against the code: overview, rules, scoring (with worked examples), levels, features, FAQ, statistics, privacy and security, What's New.
+- **Versioning:** `docs-site/versions.json` (draft/final, SHA-256 checksum per final version, so published versions are immutable); stable URLs `/versions/vX.Y.Z/`, `/latest/` = deployed version.
+- **AI knowledge base:** raw Markdown per section, `/data/docs-index.json`, `/data/versions.json`, `/latest/all.md`, `/llms.txt`.
+- **Release generator** (`docs generate`): finds the previous release commit from `backend/package.json`, collects evidence (changed files by area → affected pages, scoring constants, Level 1 points, rounds, API routes, stored Telegram fields, question counts per level, migrations, commits, release notes, developer changelog), creates the draft version with REVIEW markers and an evidence report. It does not write feature descriptions itself.
+- **Validation** (`docs validate`, `validate-dist`): required sections, What's New last with its five categories in order, semver, manifest, front matter, links and anchors, UTF-8, checksums of final versions, release readiness of the deployed version, preservation of previously published versions, secrets, infrastructure details, personal data, and claims about features that don't exist.
+- **Atomic publication** (`docs publish` via `docs-site/tools/publish.sh`): validate → build into staging → validate the build → atomic symlink switch → health check (filesystem, optional public URL) → rollback on failure; lock, log, publication record, pruning.
+
+### Changes
+- `deploy.yml`: new step 8 publishes the documentation after the API health check. Opt-in (skipped until `/home/projects/geoaigames-docs` exists). On failure the previous docs stay online and the job fails; the API is not affected. Optional repository variable `DOCS_HEALTH_URL`.
+- New workflow `.github/workflows/docs.yml` (validation only, never deploys): tool tests, source validation, release check for the app version, build and build validation, on pull requests and pushes to `main`.
+- `CLAUDE.md`: permanent rule "Documentation is a mandatory part of every release".
+- New developer docs: `docs/README.md`, `DOCUMENTATION_GUIDELINES.md`, `VERSIONING.md`, `RELEASE_PROCESS.md`, `AI_KNOWLEDGE_BASE.md`.
+- `.gitignore`: `docs-site/dist/`.
+
+### Database / API changes
+None.
+
+### Tests
+`cd docs-site && npm test`: 11 passing (renderer; real sources pass strict validation; 12 failure cases caught; immutability; release checks; release build; generator → review → freeze → build on a real git repository; atomic publish, a failed publish keeps the previous build, a failed public health check rolls back). Generator dry run on a clone of this repository: finds dc02063 as the last 2.2.0 commit; the real 2.2.0 → 2.3.0 range flags game-features, game-rules and faq (the Mini App template). `publish.sh` run locally the way the deploy runs it: skipped when not set up, then published, three republishes in a row. Browser check (Chrome via Playwright, 1280×860 and 390×844 touch, dark mode): 19/19, covering extensionless URLs, no horizontal overflow, mobile menu, search and navigation from results, version selector, breadcrumbs, last-updated dates, every internal link and anchor, raw Markdown, docs index, no page errors. `cd backend && npm test`: 78 passing (unchanged).
+
+### Deployment
+Manual one-time setup (DNS, certificate, directory, Nginx): [RELEASE_PROCESS.md](RELEASE_PROCESS.md#first-deployment-one-time-administrator). Until then the deploy skips documentation publishing.
+
+### Known issues
+- `docs.geoaigames.joocha.com` has no DNS record yet, and the current certificate doesn't cover it.
+- The game's Nginx root is the repository checkout, so `/.git/`, `/docs/`, `/docs-site/` and `/CLAUDE.md` are reachable at `geoaigames.joocha.com`. The repository is public on GitHub, so no source is secret, but the `.git` directory should be denied: `location ~ /\.(?!well-known) { deny all; }` in the game's server block.
+
+## [2.3.0] – 2026-11-18 (deployed; the live index.html matched this commit on 2026-11-19)
 
 Pinch-to-zoom in Level 1. Client only: no backend, schema, API or scoring change.
 

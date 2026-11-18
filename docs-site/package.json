@@ -1,0 +1,17 @@
+{
+  "name": "geoaigames-docs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Public documentation website and documentation release tooling for GeoAIGames. No dependencies.",
+  "type": "module",
+  "scripts": {
+    "validate": "node tools/docs.js validate",
+    "validate:strict": "node tools/docs.js validate --strict",
+    "build": "node tools/docs.js build",
+    "build:release": "node tools/docs.js build --release",
+    "generate": "node tools/docs.js generate",
+    "preview": "node tools/docs.js preview",
+    "test": "node --test tools/test/"
+  },
+  "engines": { "node": ">=20.19" }
+}

@@ -136,6 +136,9 @@ psql "$DATABASE_URL" -c "SELECT count(*) FILTER (WHERE scoring_version IS NULL) 
 ```
 Open the Mini App: the home screen shows `Name (Score: … | Level: …)`. Existing players keep every level they had unlocked; their old scores appear ÷10. Players who still have the old page open get "Couldn't save this game" once (old-scale score rejected); reopening the Mini App fixes it.
 
+### Public documentation
+Every release also needs its public documentation (`docs-site/`): generate, review, freeze, commit with the release. The deploy publishes it after the API is healthy. Full process and the one-time server setup: [RELEASE_PROCESS.md](RELEASE_PROCESS.md). Tests: `cd docs-site && npm test`.
+
 ## Health check and repair
 
 **Check (read-only, safe any time):**

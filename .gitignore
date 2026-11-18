@@ -10,3 +10,6 @@ tools/map.json
 !.github/workflows/*.yml
 backend/src/generated/
 tools/.cache/
+
+# Documentation site build output
+docs-site/dist/

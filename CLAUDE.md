@@ -30,6 +30,7 @@ It is a **production application with real players**. Treat every change as a ch
    - Facts, sources and licences: `docs/GEOGRAPHIC_DATA_SOURCES.md`
    - Endpoints: `docs/API_REFERENCE.md`
    - Setup, testing and deployment: `docs/DEVELOPMENT_GUIDE.md`
+   - Public documentation, versions and releases: `docs/README.md`, `docs/RELEASE_PROCESS.md`
 4. `docs/ROADMAP.md` (what exists, what doesn't) and the top of `docs/CHANGELOG.md`.
 5. The actual code. If the code and the docs disagree, the code is the truth. Fix the docs in the same change.
 
@@ -77,6 +78,28 @@ Before coding, check whether the request conflicts with a documented decision (t
 
 Add tests with every behavioural change. Also run `npm run content:check` after editing content. For UI changes, rebuild `index.html` and check it in a browser (see `docs/DEVELOPMENT_GUIDE.md`, "Browser check").
 
+## Public documentation and releases
+
+**DOCUMENTATION IS A MANDATORY PART OF EVERY RELEASE.**
+
+Every developer or AI coding agent modifying Geo AI Games must:
+1. Analyze the impact of the changes on existing documentation.
+2. Update affected documentation sections.
+3. Add the changes to the corresponding release notes.
+4. Preserve historical documentation.
+5. Follow the project's semantic versioning rules.
+6. Ensure the documentation website and AI Knowledge Base remain synchronized.
+
+A game release must not be considered fully documented until its documentation has been generated, validated and published.
+
+How, in this repository:
+- The public documentation (`docs-site/`, published at `https://docs.geoaigames.joocha.com/`) is the players' and the AI Assistant's source of truth. Read `docs/README.md` first, then `docs/DOCUMENTATION_GUIDELINES.md`, `docs/VERSIONING.md` and `docs/RELEASE_PROCESS.md`.
+- While working: add player-facing notes to `docs-site/release-notes/NEXT.md`.
+- For a release: bump `backend/package.json`, run `node docs-site/tools/docs.js generate`, verify every page the evidence report (`docs-site/reviews/vX.Y.Z.md`) names against the code, remove the REVIEW markers, `validate --strict`, then `freeze X.Y.Z`. Commit `docs-site/` with the release.
+- Never edit a final version in `docs-site/versions/` (checksums make them immutable; corrections go into the next version). Never publish secrets, infrastructure details or personal data. Never document a feature that doesn't exist.
+- `deploy.yml` publishes the documentation of the deployed app version after the API is healthy; a docs failure keeps the previous docs online and fails the job.
+- `cd docs-site && npm test` must pass whenever `docs-site/` changes.
+
 ## Documentation workflow (part of every task)
 
 **Before:** read the docs listed above and inspect the affected code.
@@ -84,8 +107,9 @@ Add tests with every behavioural change. Also run `npm run content:check` after 
 **After:**
 1. Add an entry to `docs/CHANGELOG.md` (version, date, features, changes, DB, API, fixes, known issues, test results).
 2. Update `docs/ROADMAP.md` to the real status.
-3. Check the docs against the code. Never document something as done unless it exists and is tested.
-4. Report what was completed and what was not.
+3. For a player-visible change: release notes in `docs-site/release-notes/NEXT.md` and, for the release, the public documentation (see "Public documentation and releases").
+4. Check the docs against the code. Never document something as done unless it exists and is tested.
+5. Report what was completed and what was not.
 
 **When a design decision changes,** don't silently overwrite it. Add a dated entry under "Decisions" in the relevant document with: previous approach, new approach, reason, migration implications.
 

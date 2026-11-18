@@ -1,0 +1,15 @@
+{
+  "$comment": "Page order of every documentation version. 'required' pages must exist in every version. 'whats-new' must stay the last entry (the validator enforces it). Optional pages are shown only in versions that contain them.",
+  "pages": [
+    { "id": "index", "title": "Introduction", "file": "index.md", "required": true },
+    { "id": "game-overview", "title": "Game Overview", "file": "game-overview.md", "required": true },
+    { "id": "game-rules", "title": "Game Rules and Conditions", "file": "game-rules.md", "required": true },
+    { "id": "scoring-system", "title": "Scoring System", "file": "scoring-system.md", "required": true },
+    { "id": "levels-guide", "title": "Levels and Stages", "file": "levels-guide.md", "required": true },
+    { "id": "game-features", "title": "Game Features", "file": "game-features.md", "required": true },
+    { "id": "faq", "title": "FAQ", "file": "faq.md", "required": true },
+    { "id": "user-statistics", "title": "User Statistics", "file": "user-statistics.md", "required": true },
+    { "id": "privacy-and-security", "title": "Privacy and Security", "file": "privacy-and-security.md", "required": true },
+    { "id": "whats-new", "title": "What's New in This Version", "file": "whats-new.md", "required": true }
+  ]
+}

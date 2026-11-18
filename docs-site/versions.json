@@ -1,0 +1,13 @@
+{
+  "$comment": "Documentation version manifest (source). One entry per game release, ascending. status: draft (being written, never published) or final (frozen by 'docs freeze'; checksum makes it immutable). The public data/versions.json is generated from this file at build time. Edit only through the docs tools (docs/VERSIONING.md).",
+  "product": "GeoAIGames",
+  "versions": [
+    {
+      "version": "2.3.0",
+      "releaseDate": "2026-11-18",
+      "status": "final",
+      "initialRelease": true,
+      "checksum": "sha256-6bdc557749807426fb44c7304ac601f144d2bee75cc2ed3cfeeb7515240d9f31"
+    }
+  ]
+}

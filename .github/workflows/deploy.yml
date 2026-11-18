@@ -160,6 +160,23 @@ jobs:
 
             sudo systemctl is-active --quiet "$SERVICE_NAME"
 
+            # 8. Publish the documentation (docs-site/) for the version that
+            #    is now running. Only after the API is healthy, so the docs
+            #    never describe a release that isn't live. Validation, build,
+            #    atomic switch and rollback are in docs-site/tools/publish.sh.
+            #    Opt-in: skipped until an administrator creates $DOCS_ROOT
+            #    (docs/RELEASE_PROCESS.md). A failure keeps the previous
+            #    documentation online and fails the job, but the API stays up.
+            echo "Publishing documentation..."
+            cd "$DEPLOY_PATH"
+            DOCS_ROOT="/home/projects/geoaigames-docs"
+            if ! DOCS_ROOT="$DOCS_ROOT" DOCS_HEALTH_URL="${{ vars.DOCS_HEALTH_URL }}" \
+                 bash docs-site/tools/publish.sh "$DEPLOY_PATH"; then
+              echo "ERROR: the API is deployed and healthy, but the documentation was NOT published."
+              echo "The previous documentation is still online. Details: $DOCS_ROOT/logs/publish.log"
+              exit 1
+            fi
+
             echo "=================================="
             echo "Deployment completed successfully"
             echo "=================================="

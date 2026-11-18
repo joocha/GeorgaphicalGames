@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated: 2026-11-18 (v2.1.0 prepared, not yet deployed; v2.3.0 Level 1 pinch-to-zoom prepared).
+Last updated: 2026-11-19 (v2.3.0 live; public documentation platform implemented, first server setup pending).
 
 ## Completed
 
@@ -23,6 +23,7 @@ Last updated: 2026-11-18 (v2.1.0 prepared, not yet deployed; v2.3.0 Level 1 pinc
 | **Level 1 pinch-to-zoom on touch screens; map view clamped to the map in all levels** | v2.3.0 |
 | **n8n internal API (verified facts, AI drafts) and review CLI** | v2.0.0 |
 | **Documentation system (`docs/`, `CLAUDE.md`)** | v2.0.0 |
+| **Public documentation site (`docs-site/`): versioned Markdown, static site, search, AI index, release generator, validation, atomic publication in `deploy.yml`; docs for 2.3.0** | unreleased (app 2.3.0) |
 | **Scoring ÷10, Level 1 Hard = 2× Easy, versioned score scale (history normalized on read)** | v2.1.0 |
 | **Unlocking by lifetime score (1,000 / 3,000 / 6,000 / 10,000), `user_profiles.level`, name line with score and level** | v2.1.0 |
 
@@ -32,6 +33,7 @@ Phase A (platform foundation) and Phase B (question engine) are complete. Phases
 
 ## Next priorities
 
+0. **Put the documentation site online** (one-time admin setup: DNS record, certificate, `/home/projects/geoaigames-docs`, Nginx block; [RELEASE_PROCESS.md](RELEASE_PROCESS.md#first-deployment-one-time-administrator)), then set `DOCS_HEALTH_URL`. Deny `/.git/` in the game's Nginx block.
 1. **Deploy v2.1.0** (migration with the API stopped) following [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md#v210-deployment-manual-steps-in-this-order); if v2.0.0 isn't live yet, do its steps first. Spot-check the 80 seed questions.
 2. **Statistics UI**: a profile screen using `GET /me/stats` (backend exists, no screen yet).
 3. **Outbox dispatcher** to n8n (design in `backend/docs/database.md` §7); then the draft-generation workflow using `/internal/geo-objects` and `/internal/question-drafts`.
@@ -57,7 +59,7 @@ Phase A (platform foundation) and Phase B (question engine) are complete. Phases
 
 - Level 1 scores are validated (bounds), not computed, on the server.
 - Micro-states are not tappable on the 1:110m map.
-- No CI test run before deploy: `deploy.yml` deploys on push without running `npm test`. Add a test job.
+- No CI test run before deploy: `deploy.yml` deploys on push without running `npm test`. Add a test job. (The separate `Documentation checks` workflow validates docs but doesn't gate the deploy; the deploy re-validates before publishing docs.)
 - Migrations and content import are manual steps.
 - Response time is measured between answers on the server (includes reading the previous explanation).
 - The seed questions were written with AI assistance from verified facts; human review recommended.
